@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jitsucata
+    restart: always
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Senha333
+      POSTGRES_DB: jitsucata
+    ports:
+      - "5433:5432"
+    volumes:
+      - jitsucata-bd-data:/var/lib/postgresql/data
+volumes:
+  jitsucata-bd-data:

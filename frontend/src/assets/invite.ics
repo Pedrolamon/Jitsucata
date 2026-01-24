@@ -1,0 +1,48 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VTIMEZONE
+TZID:America/Lima
+X-LIC-LOCATION:America/Lima
+BEGIN:STANDARD
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0500
+TZNAME:GMT-5
+DTSTART:19700101T000000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=America/Lima:20260123T120000
+DTEND;TZID=America/Lima:20260123T123000
+DTSTAMP:20260121T173203Z
+ORGANIZER;CN=Brenda Pacco:mailto:brenda.pacco@automatearmy.com
+UID:1l5s6akrag06oqvngsf271f41a@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Brenda Pacco;X-NUM-GUESTS=0:mailto:brenda.pacco@automatearmy.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=Martin Kadiev;X-NUM-GUESTS=0:mailto:martin.kadiev@automatearmy.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=Guilherme Barroso;X-NUM-GUESTS=0:mailto:gbarroso@automatearmy.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=pedroazevedolamon1@gmail.com;X-NUM-GUESTS=0:mailto:pedroazevedolamo
+ n1@gmail.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/xte-qazi-vxh
+X-MICROSOFT-CDO-OWNERAPPTID:-799428955
+CREATED:20260121T173157Z
+DESCRIPTION:-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~::~:~::-\nJoin with Google Meet: https://meet.google.com/xt
+ e-qazi-vxh\nOr dial: (PE) +51 1 6449188 PIN: 7581522554328#\nMore phone num
+ bers: https://tel.meet/xte-qazi-vxh?pin=7581522554328&hs=7\n\nLearn more ab
+ out Meet at: https://support.google.com/a/users/answer/9282720\n\nPlease do
+  not edit this section.\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:
+ ~:~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+LAST-MODIFIED:20260121T173202Z
+LOCATION:https://meet.google.com/xte-qazi-vxh
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:2° Interview W/Pedro Lamon & Martin Kadiev
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
