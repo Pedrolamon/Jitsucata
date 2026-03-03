@@ -6,15 +6,17 @@ import { Request } from 'express';
 
 declare module 'express' {
   interface Request {
-    user?: any; // Altere para 'any'
+    user?: any;
   }
 }
 
-export interface User {
-  id: string;
-  name: string;
-  password: string;
-  role: string;
+export type Perfil = 'admin' | 'fornecedor' | 'financeiro';
+
+export interface Usuario {
+  nome: string;
+  email: string;
+  perfil: Perfil;
+  senha?: string;
 }
 
 export interface Fornecedor {
@@ -30,6 +32,8 @@ export interface Fornecedor {
     state?: string;
     cep: string;
     neighborhood: string;
+    latitude?: number;
+    longitude?: number;
   }
   EnvironmentalLicense: {
     numero: string;
@@ -51,7 +55,5 @@ export interface Fornecedor {
   status?: boolean;
   legalNature: string;
   criadoEm?: string;
-  latitude?: number;
-  longitude?: number;
   password
 }

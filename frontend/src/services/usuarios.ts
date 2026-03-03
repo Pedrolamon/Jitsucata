@@ -1,6 +1,6 @@
 import api from './api';
 
-export type Perfil = 'admin' | 'fornecedor' | 'operador';
+export type Perfil = 'admin' | 'fornecedor' | 'financeiro';
 export interface Usuario {
   id: string;
   nome: string;
@@ -14,7 +14,7 @@ export const listarUsuarios = async (): Promise<Usuario[]> => {
   return res.data;
 };
 export const criarUsuario = async (dados: Omit<Usuario, 'id'>): Promise<Usuario> => {
-  const res = await api.post('/register', dados);
+  const res = await api.post('/register-user', dados);
   return res.data.user;
 };
 export const editarUsuario = async (id: string, dados: Partial<Omit<Usuario, 'id'>>): Promise<Usuario | undefined> => {
@@ -28,6 +28,5 @@ export const trocarSenha = async (id: string, novaSenha: string) => {
   await api.post('/trocar-senha', { id, novaSenha });
 };
 export const listarPerfis = async (): Promise<Perfil[]> => {
-  const res = await api.get('/perfis');
-  return res.data;
+  return ['admin', 'fornecedor', 'financeiro'];
 }; 

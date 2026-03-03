@@ -1,7 +1,7 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listarFornecedores, excluirFornecedor } from '../services/fornecedores';
-import type { Fornecedor } from '../types/fornecedor';
+import { listarFornecedores, excluirFornecedor } from '../../services/fornecedores';
+import type { Fornecedor } from '../../types/fornecedor';
 import { Search, Plus, Trash2, Edit3, Eye, X, MapPin, ShieldCheck, User, Info } from 'lucide-react';
 
 
@@ -9,10 +9,10 @@ const FornecedoresList = () => {
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Estado para controlar o Fornecedor selecionado para o "Veja Mais"
   const [selectedFornecedor, setSelectedFornecedor] = useState<Fornecedor | null>(null);
-  
+
   const navigate = useNavigate();
 
   const fetchFornecedores = async () => {
@@ -20,9 +20,9 @@ const FornecedoresList = () => {
     try {
       const data = await listarFornecedores();
       setFornecedores(data);
-      setTimeout(() => { 
-      setLoading(false);
-    }, 800);
+      setTimeout(() => {
+        setLoading(false);
+      }, 800);
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,7 @@ const FornecedoresList = () => {
     }
   };
 
-  const filteredFornecedores = fornecedores.filter(f => 
+  const filteredFornecedores = fornecedores.filter(f =>
     f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     f.cnpj.includes(searchTerm) ||
     f.address.city.toLowerCase().includes(searchTerm.toLowerCase())
@@ -45,7 +45,7 @@ const FornecedoresList = () => {
 
   return (
     <div className=" w-full" style={{ backgroundColor: 'var(--color-primary)' }}>
-      
+
       {/* Cabeçalho */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
@@ -56,7 +56,7 @@ const FornecedoresList = () => {
         <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input 
+            <input
               type="text"
               placeholder="Buscar por nome, CNPJ ou cidade..."
               className="pl-10 pr-4 py-2 w-full md:w-80 rounded-md border-none shadow-lg text-sm outline-none"
@@ -141,14 +141,14 @@ const FornecedoresList = () => {
       {selectedFornecedor && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            
+
             {/* Header do Modal */}
             <div className="p-6 border-b flex justify-between items-center bg-gray-50">
               <div>
                 <h3 className="text-xl font-black text-gray-900 uppercase italic leading-none">{selectedFornecedor.name}</h3>
                 <p className="text-sm text-gray-500 mt-1">CNPJ: {selectedFornecedor.cnpj}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedFornecedor(null)}
                 className="p-2 hover:bg-gray-200 rounded-full transition-colors"
               >
@@ -158,7 +158,7 @@ const FornecedoresList = () => {
 
             {/* Conteúdo do Modal (Scrollable) */}
             <div className="p-6 overflow-y-auto no-scrollbar grid grid-cols-1 md:grid-cols-2 gap-8">
-              
+
               {/* Seção 1: Dados Gerais */}
               <div className="space-y-4">
                 <h4 className="flex items-center gap-2 text-[var(--color-primary)] font-bold uppercase text-xs tracking-widest border-b pb-2">
@@ -219,8 +219,8 @@ const FornecedoresList = () => {
             {/* Rodapé do Modal */}
             {selectedFornecedor.observacoes && (
               <div className="p-6 bg-orange-50 border-t border-orange-100">
-                 <p className="text-[10px] uppercase font-black text-orange-800 mb-1">Observações Internas</p>
-                 <p className="text-sm text-orange-900 italic">{selectedFornecedor.observacoes}</p>
+                <p className="text-[10px] uppercase font-black text-orange-800 mb-1">Observações Internas</p>
+                <p className="text-sm text-orange-900 italic">{selectedFornecedor.observacoes}</p>
               </div>
             )}
           </div>

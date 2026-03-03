@@ -10,7 +10,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 
 const EdiçãoFornecedores = () => {
-    const {id} = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -58,12 +58,12 @@ const EdiçãoFornecedores = () => {
         const response = await api.get(`/fornecedores/${id}`);
         // Preenche o formulário com os dados que vêm do banco
         setFormData(prev => ({
-            ...prev,
-            ...response.data,
-            address: { ...prev.address, ...response.data.address },
-            EnvironmentalLicense: { ...prev.EnvironmentalLicense, ...response.data.EnvironmentalLicense },
-            LegalRepresentative: { ...prev.LegalRepresentative, ...response.data.LegalRepresentative }
-          }));
+          ...prev,
+          ...response.data,
+          address: { ...prev.address, ...response.data.address },
+          EnvironmentalLicense: { ...prev.EnvironmentalLicense, ...response.data.EnvironmentalLicense },
+          LegalRepresentative: { ...prev.LegalRepresentative, ...response.data.LegalRepresentative }
+        }));
       } catch (err) {
         console.error(err);
         setError('Não foi possível carregar os dados deste fornecedor.');
@@ -79,7 +79,7 @@ const EdiçãoFornecedores = () => {
     setError('');
     setLoading(true);
     try {
-        if(!id) throw new Error("Fornecedor não encontrado")
+      if (!id) throw new Error("Fornecedor não encontrado")
       await api.put(`/fornecedores/${id}`, formData);
       alert("Dados atualizados com sucesso!")
       navigate('/fornecedores');
@@ -99,17 +99,17 @@ const EdiçãoFornecedores = () => {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Botão Voltar */}
-      <button 
+      <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4"
+        className="flex items-center gap-2 text-[var(--color-primary)] transition-colors mb-4"
       >
         <ArrowLeft size={20} /> Voltar para listagem
       </button>
 
-      <Card className="border-none shadow-2xl bg-white dark:bg-gray-900">
-        <CardHeader className="border-b bg-gray-50/50 dark:bg-gray-800/50">
+      <Card className="border-none shadow-2xl bg-white ">
+        <CardHeader className="border-b ">
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
-            <PlusCircle className="text-[var(--color-primary)]" /> 
+            <PlusCircle className="text-[var(--color-primary)]" />
             Cadastrar Novo Fornecedor
           </CardTitle>
           <p className="text-sm text-muted-foreground">Preencha os dados abaixo para registrar um novo parceiro no sistema.</p>
@@ -117,7 +117,7 @@ const EdiçãoFornecedores = () => {
 
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            
+
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                 {error}
@@ -132,23 +132,23 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Nome Fantasia</Label>
-                  <Input id="name" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                  <Input id="name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="cnpj">CNPJ</Label>
-                  <Input id="cnpj" required placeholder="00.000.000/0000-00" value={formData.cnpj} onChange={(e) => setFormData({...formData, cnpj: e.target.value})} />
+                  <Input id="cnpj" required placeholder="00.000.000/0000-00" value={formData.cnpj} onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">E-mail Corporativo</Label>
-                  <Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                  <Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="Phone">Telefone</Label>
-                  <Input id="Phone" required value={formData.Phone} onChange={(e) => setFormData({...formData, Phone: e.target.value})} />
+                  <Input id="Phone" required value={formData.Phone} onChange={(e) => setFormData({ ...formData, Phone: e.target.value })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="stateRegistration">Inscrição Estadual</Label>
-                  <Input id="stateRegistration" value={formData.stateRegistration} onChange={(e) => setFormData({...formData, stateRegistration: e.target.value})} />
+                  <Input id="stateRegistration" value={formData.stateRegistration} onChange={(e) => setFormData({ ...formData, stateRegistration: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -161,23 +161,23 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="grid gap-2 md:col-span-2">
                   <Label htmlFor="street">Logradouro (Rua/Av)</Label>
-                  <Input id="street" required value={formData.address?.street || ""} onChange={(e) => setFormData({...formData, address:{...formData.address!, street: e.target.value}})} />
+                  <Input id="street" required value={formData.address?.street || ""} onChange={(e) => setFormData({ ...formData, address: { ...formData.address!, street: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="number">Número</Label>
-                  <Input id="number" required value={formData.address.number} onChange={(e) => setFormData({...formData, address:{...formData.address, number: e.target.value}})} />
+                  <Input id="number" required value={formData.address.number} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, number: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="neighborhood">Bairro</Label>
-                  <Input id="neighborhood" required value={formData.address.neighborhood} onChange={(e) => setFormData({...formData, address:{...formData.address, neighborhood: e.target.value}})} />
+                  <Input id="neighborhood" required value={formData.address.neighborhood} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, neighborhood: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="city">Cidade</Label>
-                  <Input id="city" required value={formData.address.city} onChange={(e) => setFormData({...formData, address:{...formData.address, city: e.target.value}})} />
+                  <Input id="city" required value={formData.address.city} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="state">Estado (UF)</Label>
-                  <Input id="state" required value={formData.address.state} onChange={(e) => setFormData({...formData, address:{...formData.address, state: e.target.value}})} />
+                  <Input id="state" required value={formData.address.state} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, state: e.target.value } })} />
                 </div>
               </div>
             </div>
@@ -190,19 +190,19 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="LicenseNumber">Nº da Licença</Label>
-                  <Input id="LicenseNumber" value={formData.EnvironmentalLicense.numero} onChange={(e) => setFormData({...formData, EnvironmentalLicense:{...formData.EnvironmentalLicense, numero: e.target.value}})} />
+                  <Input id="LicenseNumber" value={formData.EnvironmentalLicense.numero} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, numero: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="IssuingBody">Órgão Emissor</Label>
-                  <Input id="IssuingBody" placeholder="Ex: INEA" value={formData.EnvironmentalLicense.IssuingBody} onChange={(e) => setFormData({...formData, EnvironmentalLicense:{...formData.EnvironmentalLicense, IssuingBody: e.target.value}})} />
+                  <Input id="IssuingBody" placeholder="Ex: INEA" value={formData.EnvironmentalLicense.IssuingBody} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, IssuingBody: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="Validity">Validade</Label>
-                  <Input id="Validity" type="date" value={formData.EnvironmentalLicense.validity} onChange={(e) => setFormData({...formData, EnvironmentalLicense:{...formData.EnvironmentalLicense, validity: e.target.value}})} />
+                  <Input id="Validity" type="date" value={formData.EnvironmentalLicense.validity} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, validity: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="capacity">Capacidade Geração (T/Mês)</Label>
-                  <Input id="capacity" type="number" value={formData.capacity} onChange={(e) => setFormData({...formData, capacity: e.target.value})} />
+                  <Input id="capacity" type="number" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
                 </div>
               </div>
             </div>
@@ -215,19 +215,19 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="legalName">Nome Completo</Label>
-                  <Input id="legalName" value={formData.LegalRepresentative.name} onChange={(e) => setFormData({...formData, LegalRepresentative:{...formData.LegalRepresentative, name: e.target.value}})} />
+                  <Input id="legalName" value={formData.LegalRepresentative.name} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, name: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="legalEmail">E-mail de Contato</Label>
-                  <Input id="legalEmail" value={formData.LegalRepresentative.email} onChange={(e) => setFormData({...formData, LegalRepresentative:{...formData.LegalRepresentative, email: e.target.value}})} />
+                  <Input id="legalEmail" value={formData.LegalRepresentative.email} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, email: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="legalPhone">Telefone Direto</Label>
-                  <Input id="legalPhone" value={formData.LegalRepresentative.phone} onChange={(e) => setFormData({...formData, LegalRepresentative:{...formData.LegalRepresentative, phone: e.target.value}})} />
+                  <Input id="legalPhone" value={formData.LegalRepresentative.phone} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, phone: e.target.value } })} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="legalPhone">CPF</Label>
-                  <Input id="legalPhone" value={formData.LegalRepresentative.cpf} onChange={(e) => setFormData({...formData, LegalRepresentative:{...formData.LegalRepresentative, cpf: e.target.value}})} />
+                  <Input id="legalPhone" value={formData.LegalRepresentative.cpf} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, cpf: e.target.value } })} />
                 </div>
               </div>
             </div>
@@ -236,7 +236,7 @@ const EdiçãoFornecedores = () => {
               <Button type="button" variant="outline" onClick={() => navigate('/fornecedores')}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 px-10">
+              <Button type="submit" disabled={loading} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-[var(--color-primary)] px-10">
                 {loading ? "Salvando..." : "Salvar Fornecedor"}
               </Button>
             </div>

@@ -1,42 +1,122 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { criarMaterial } from '../../services/materiais';
+import { criarMaterial, newMaterial, getTiposMateriais } from '../../services/materiais';
 import { useAuth } from '../../contexts/AuthContext';
+import { ClassificaçãoMateriais } from '../../domain/materiais';
 import {
   Weight,
   FileText,
   PlusCircle,
   ArrowLeft,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Truck,
+  Scale,
+  DollarSign,
+  Calendar,
+  MapPin,
+  Factory,
+  Layers,
+  FlaskConical,
+  RefreshCw,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 
-const tipos = [
-  'Sucata Mista',
-  'Cavaco',
-  'Chapa Recorte',
-  'Ferro Fundido',
-  'Aparas',
-];
+
+interface MaterialData {
+  id: string;
+  tipo: string;
+}
 
 const RegistrarMaterial = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const fornecedorId = user?.id;
+  const [abaAtiva, setAbaAtiva] = useState("false");
+  const [novoMaterial, setNovoMaterial] = useState<string>('');
+  const [listaDeMateriais, setListaDeMateriais] = useState<MaterialData[]>([]);
+  const [mostrarListaTipos, setMostrarListaTipos] = useState(false);
 
   const [form, setForm] = useState({
-    tipo: tipos[0],
+    tipo: "",
+    pesoBruto: '',
+    pesoLiquido: '',
+    contaminacao: '',
+    cambio: '',
     quantidade: '',
-    unidade: 'ton', // Padronizado para ton para facilitar a logística industrial
+    unidade: 'kg',
+    preco: '',
+    patio: '',
+    notaFiscal: '',
+    placaVeiculo: '',
+    dataEntrada: '',
     observacoes: '',
-    fotos: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const fetchMateriais = async () => {
+    // 1) Sempre carregar a lista base a partir da Classificação de Materiais
+    const baseMateriais: MaterialData[] = ClassificaçãoMateriais.map((m) => ({
+      id: m.Titulo,
+      tipo: m.Titulo,
+    }));
+
+    setListaDeMateriais(baseMateriais);
+
+    if (baseMateriais.length > 0 && !form.tipo) {
+      setForm(prev => ({ ...prev, tipo: baseMateriais[0].tipo }));
+    }
+
+    // 2) Opcional: tentar complementar com tipos cadastrados no backend (se existirem)
+    try {
+      setLoading(true);
+      const data = await getTiposMateriais();
+
+      const extras: MaterialData[] = data
+        .filter((d: any) => !baseMateriais.some((b) => b.tipo === d.tipo))
+        .map((d: any) => ({ id: d.id, tipo: d.tipo }));
+
+      if (extras.length > 0) {
+        setListaDeMateriais(prev => [...prev, ...extras]);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar materiais adicionais:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMateriais();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlenovoMaterial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!novoMaterial) {
+      setError("Digite um nome válido para o material.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await newMaterial(novoMaterial);
+
+      setSuccess('Material criado com sucesso!');
+      setNovoMaterial('');
+      setAbaAtiva("false");
+      window.location.reload();
+    } catch (err) {
+      setError('Erro ao criar novo material.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -60,9 +140,20 @@ const RegistrarMaterial = () => {
     setLoading(true);
     try {
       await criarMaterial({
-        ...form,
+        tipo: form.tipo,
         quantidade: Number(form.quantidade),
+        unidade: form.unidade,
         fornecedorId: fornecedorId,
+        observacoes: form.observacoes || undefined,
+        patio: form.patio || undefined,
+        notaFiscal: form.notaFiscal || undefined,
+        placaVeiculo: form.placaVeiculo || undefined,
+        pesoBruto: form.pesoBruto ? Number(form.pesoBruto) : undefined,
+        pesoLiquido: form.pesoLiquido ? Number(form.pesoLiquido) : undefined,
+        contaminacao: form.contaminacao ? Number(form.contaminacao) : undefined,
+        cambio: form.cambio ? Number(form.cambio) : undefined,
+        preco: form.preco ? Number(form.preco) : undefined,
+        dataEntrada: form.dataEntrada || undefined,
       });
       setSuccess('Material registrado e enviado ao estoque!');
       setTimeout(() => navigate('/inventory'), 1500);
@@ -72,21 +163,67 @@ const RegistrarMaterial = () => {
       setLoading(false);
     }
   };
-
+  if (abaAtiva === "true") {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-white/10 max-w-xl animate-in slide-in-from-bottom-4 duration-500">
+          <form onSubmit={handlenovoMaterial}>
+            <div className='flex justify-between items-center mb-5'>
+              <label className="text-[18px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                Material
+              </label>
+              <Button
+                onClick={() => navigate(-1)}
+                className="bg-white/10 hover:bg-white/20 text-[var(--color-primary)] border-none rounded-xl"
+              >
+                <ArrowLeft size={18} className="mr-2" /> Voltar
+              </Button>
+            </div>
+            <div className='flex gap-5'>
+              <div>
+                <Scale className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                <input
+                  name="Nome"
+                  type="text"
+                  placeholder="Nome do Material"
+                  value={novoMaterial}
+                  onChange={(e) => setNovoMaterial(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                // required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-1 h-16 !bg-[var(--color-primary)] hover:bg-[#BF5A1B] text-white font-black uppercase italic rounded-2xl shadow-xl transition-all"
+              >
+                {loading ? "Processando..." : <><PlusCircle className="mr-2" /> Criar material</>}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div >
+    )
+  }
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Entrada Manual</h2>
           <p className="text-white/70 text-xs font-medium uppercase tracking-widest">Registro de novos lotes no sistema</p>
+
         </div>
-        <Button
-          onClick={() => navigate(-1)}
-          className="bg-white/10 hover:bg-white/20 text-[var(--color-primary)] border-none rounded-xl"
-        >
-          <ArrowLeft size={18} className="mr-2" /> Voltar
-        </Button>
+
+        <div className=' flex items-center gap-8'>
+
+          <Button
+            onClick={() => navigate(-1)}
+            className="bg-white/10 hover:bg-white/20 text-[var(--color-primary)] border-none rounded-xl"
+          >
+            <ArrowLeft size={18} className="mr-2" /> Voltar
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-12 gap-8">
@@ -136,38 +273,115 @@ const RegistrarMaterial = () => {
         <div className="col-span-12 lg:col-span-8">
           <form onSubmit={handleSubmit} className="bg-white p-8 rounded-[3rem] shadow-2xl space-y-8">
 
-            {/* Seletor de Tipo de Material (Visual) */}
+            {/* Seletor de Tipo de Material (Dropdown) */}
             <section>
-              <label className="text-[10px] font-black uppercase text-gray-400 mb-4 block tracking-widest">
-                1. Selecione o Tipo de Material
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {tipos.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setForm({ ...form, tipo: t })}
-                    className={cn(
-                      "p-4 rounded-2xl text-xs font-black uppercase italic transition-all border-2 text-center",
-                      form.tipo === t
-                        ? "border-[var(--color-primary)] bg-orange-50 text-[var(--color-primary)] shadow-md"
-                        : "border-gray-100 text-gray-400 hover:border-orange-200"
-                    )}
+              <div className='flex justify-between items-center gap-4 relative'>
+                <label className="text-[11px] font-black uppercase text-gray-400 mb-4 block tracking-widest">
+                  1. Selecione o Tipo de Material
+                </label>
+                <div className='flex items-center'>
+                  <select
+                    name="unidade"
+                    value={form.unidade}
+                    onChange={handleChange}
+                    className="p-5 border-none bg-[--bg-input] rounded-2xl text-[15px] font-bold outline-none text-gray-400 appearance-none cursor-pointer"
                   >
-                    {t}
-                  </button>
-                ))}
+                    <option value="ton">Ton</option>
+                    <option value="kg">Kg</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-2 relative">
+                <button
+                  type="button"
+                  onClick={() => setMostrarListaTipos((prev) => !prev)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-black uppercase italic text-gray-500 hover:border-orange-300 transition-all"
+                >
+                  <span className="truncate">
+                    {form.tipo || 'Selecione um tipo de material'}
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", mostrarListaTipos && "rotate-180")} />
+                </button>
+
+                {mostrarListaTipos && (
+                  <div className="absolute z-20 mt-2 w-full max-h-64 overflow-auto bg-white border border-gray-100 rounded-2xl shadow-xl">
+                    {listaDeMateriais.length > 0 ? (
+                      listaDeMateriais.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => {
+                            setForm((prev) => ({ ...prev, tipo: t.tipo }));
+                            setMostrarListaTipos(false);
+                          }}
+                          className={cn(
+                            "w-full text-left px-4 py-2 text-[11px] font-black uppercase tracking-tight hover:bg-orange-50",
+                            form.tipo === t.tipo
+                              ? "text-[var(--color-primary)] bg-orange-50"
+                              : "text-gray-500"
+                          )}
+                        >
+                          {t.tipo}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-[11px] text-gray-400">
+                        Nenhum material encontrado.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </section>
 
             {/* Quantidade e Unidade */}
-            <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
               <div>
                 <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                  2. Quantidade do Lote
+                  2. Peso Bruto
+                </label>
+                <div className="relative">
+                  <Scale className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="pesoBruto"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.pesoBruto}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  3. Peso líquido
                 </label>
                 <div className="relative">
                   <Weight className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="pesoLiquido"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.pesoLiquido}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  4. Quantidade do Lote
+                </label>
+                <div className="relative">
+                  <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
                   <input
                     name="quantidade"
                     type="number"
@@ -180,26 +394,156 @@ const RegistrarMaterial = () => {
                   />
                 </div>
               </div>
+
               <div>
                 <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                  Unidade
+                  5. Índice de contaminação
                 </label>
-                <select
-                  name="unidade"
-                  value={form.unidade}
-                  onChange={handleChange}
-                  className="w-full p-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none appearance-none cursor-pointer"
-                >
-                  <option value="ton">Toneladas (Ton)</option>
-                  <option value="kg">Quilos (Kg)</option>
-                </select>
+                <div className="relative">
+                  <FlaskConical className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="contaminacao"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.contaminacao}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
               </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  6. Placa do veículo
+                </label>
+                <div className="relative">
+                  <Truck className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="placaVeiculo"
+                    type="text"
+                    placeholder="ABC-1234"
+                    value={form.placaVeiculo}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  7. Preço
+                </label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="preco"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.preco}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  8. Câmbio
+                </label>
+                <div className="relative">
+                  <RefreshCw className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="cambio"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.cambio}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  9. Fornecedor
+                </label>
+                <div className="relative">
+                  <Factory className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="fornecedor"
+                    type="text"
+                    value={user?.name || ''}
+                    readOnly
+                    className="w-full pl-12 pr-4 py-4 bg-gray-100 border-none rounded-2xl text-lg font-bold outline-none text-gray-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  10. Pátio estocado
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="patio"
+                    type="text"
+                    placeholder="Pátio / Baia"
+                    value={form.patio}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  11. Nota Fiscal
+                </label>
+                <div className="relative">
+                  <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="notaFiscal"
+                    type="text"
+                    placeholder="000.000.000"
+                    value={form.notaFiscal}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  12. Data de entrada
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="dataEntrada"
+                    type="date"
+                    value={form.dataEntrada}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
             </section>
 
             {/* Observações */}
             <section>
               <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                3. Informações Adicionais (Opcional)
+                13. Informações Adicionais (Opcional)
               </label>
               <div className="relative">
                 <FileText className="absolute left-4 top-4 text-gray-300" size={20} />
@@ -218,7 +562,7 @@ const RegistrarMaterial = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="flex-1 h-16 bg-[var(--color-primary)] hover:bg-[#BF5A1B] text-white font-black uppercase italic rounded-2xl shadow-xl transition-all"
+                className="flex-1 h-16 !bg-[var(--color-primary)] hover:bg-[#BF5A1B] text-white font-black uppercase italic rounded-2xl shadow-xl transition-all"
               >
                 {loading ? "Processando..." : <><PlusCircle className="mr-2" /> Registrar Entrada</>}
               </Button>

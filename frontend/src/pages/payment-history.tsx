@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { 
-  History, 
-  Search, 
-  Calendar, 
-  Download, 
-  ChevronRight, 
+import { useState } from 'react';
+import {
+  History,
+  Search,
+  Calendar,
+  Download,
   ExternalLink,
   Printer,
   FilterX
@@ -24,8 +23,8 @@ const HISTORICO_MOCK = [
 export default function PaymentHistory() {
   const [busca, setBusca] = useState('');
   const [dateRange, setDateRange] = useState({
-  start: '',
-  end: ''
+    start: '',
+    end: ''
   });
 
   return (
@@ -40,8 +39,8 @@ export default function PaymentHistory() {
         <div className="flex gap-2 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 h-4 w-4" />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Buscar por ID ou Fornecedor..."
               className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white text-xs outline-none focus:bg-white/20 transition-all placeholder:text-white/30"
               value={busca}
@@ -55,7 +54,7 @@ export default function PaymentHistory() {
       </div>
 
       <div className="grid grid-cols-12 gap-6">
-        
+
         {/* LADO ESQUERDO: Filtros Rápidos de Data */}
         <div className="col-span-12 lg:col-span-3 space-y-4">
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-[2rem] border border-white/20">
@@ -67,45 +66,45 @@ export default function PaymentHistory() {
               <button className="px-4 py-3 bg-white/5 text-[var(--color-primary)] hover:bg-white/10 font-black text-[10px] uppercase italic rounded-xl transition-all">Últimos 15 dias</button>
               <button className="px-4 py-3 bg-white/5 text-[var(--color-primary)] hover:bg-white/10 font-black text-[10px] uppercase italic rounded-xl transition-all">Última semana</button>
               <div className="grid grid-cols-1 gap-2">
-  {/* Novo Container de Período Customizado */}
-  <div className="mt-2 p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
-    <p className="text-white text-[13px] font-black uppercase italic mb-1">Período Customizado:</p>
-    
-    <div className="grid grid-cols-2 gap-2">
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-white/50 uppercase">De:</label>
-        <input 
-          type="date" 
-          value={dateRange.start}
-          onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
-          className="bg-white text-[var(--color-primary)] text-[10px] font-bold p-1 rounded-md outline-none"
-        />
-      </div>
-      
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-white/50 uppercase">Até:</label>
-        <input 
-          type="date" 
-          value={dateRange.end}
-          onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-          className="bg-white text-[var(--color-primary)] text-[10px] font-bold p-1 rounded-md outline-none"
-        />
-      </div>
-    </div>
-  </div>
-</div>
+                {/* Novo Container de Período Customizado */}
+                <div className="mt-2 p-3 bg-white/5 rounded-xl border border-white/10 space-y-2">
+                  <p className="text-white text-[13px] font-black uppercase italic mb-1">Período Customizado:</p>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-white/50 uppercase">De:</label>
+                      <input
+                        type="date"
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                        className="bg-white text-[var(--color-primary)] text-[10px] font-bold p-1 rounded-md outline-none"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-white/50 uppercase">Até:</label>
+                      <input
+                        type="date"
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                        className="bg-white text-[var(--color-primary)] text-[10px] font-bold p-1 rounded-md outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
               <button className="mt-4 flex items-center justify-center gap-2 text-[var(--color-primary)] text-[9px] font-black uppercase tracking-widest hover:text-white transition-colors">
                 <FilterX size={12} /> Limpar Filtros
               </button>
             </div>
           </div>
 
-          
+
           <div className="bg-orange-600 p-6 rounded-[2rem] shadow-xl text-white relative overflow-hidden group">
-             <History className="absolute -right-4 -bottom-4 h-24 w-24 text-black/10 group-hover:scale-110 transition-transform" />
-             <h4 className="font-black uppercase italic text-xs mb-2">Total do Período</h4>
-             <p className="text-3xl font-black tracking-tighter italic">R$ 70.150,50</p>
-             <p className="text-[10px] text-orange-200 uppercase font-bold mt-2 tracking-widest">64 transações concluídas</p>
+            <History className="absolute -right-4 -bottom-4 h-24 w-24 text-black/10 group-hover:scale-110 transition-transform" />
+            <h4 className="font-black uppercase italic text-xs mb-2">Total do Período</h4>
+            <p className="text-3xl font-black tracking-tighter italic">R$ 70.150,50</p>
+            <p className="text-[10px] text-orange-200 uppercase font-bold mt-2 tracking-widest">64 transações concluídas</p>
           </div>
         </div>
 
@@ -165,11 +164,11 @@ export default function PaymentHistory() {
             </div>
             {/* Paginação Simples */}
             <div className="p-6 bg-gray-50/50 flex justify-between items-center border-t border-gray-100">
-                <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Exibindo 5 de 142 registros</span>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="h-8 text-[10px] font-black uppercase rounded-lg">Anterior</Button>
-                    <Button variant="outline" className="h-8 text-[10px] font-black uppercase rounded-lg bg-white">Próximo</Button>
-                </div>
+              <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Exibindo 5 de 142 registros</span>
+              <div className="flex gap-2">
+                <Button variant="outline" className="h-8 text-[10px] font-black uppercase rounded-lg">Anterior</Button>
+                <Button variant="outline" className="h-8 text-[10px] font-black uppercase rounded-lg bg-white">Próximo</Button>
+              </div>
             </div>
           </div>
         </div>

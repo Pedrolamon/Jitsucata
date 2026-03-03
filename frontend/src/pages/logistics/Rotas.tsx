@@ -30,13 +30,27 @@ const CriarRota = () => {
 
   useEffect(() => {
     Promise.all([listarMateriais(), listarFornecedores()]).then(([mats, forns]) => {
-      // Cruzando dados: Fornecedor + Quantidade de Material Pendente
+      console.log("DADOS BRUTOS DO BACKEND:", forns);
+
       const fornsComCarga = forns.map(f => {
+        // Pega a lat/lng de dentro do objeto address conforme sua interface
+        const lat = f.address?.latitude;
+        const lng = f.address?.longitude;
+
         const cargaTotal = mats
           .filter(m => m.fornecedorId === f.id && m.status === 'pendente')
           .reduce((acc, curr) => acc + Number(curr.quantidade), 0);
-        return { ...f, cargaTotal };
+
+        // Retornamos um novo objeto com a lat/lng "achatada" no primeiro nível
+        return {
+          ...f,
+          latitude: lat,
+          longitude: lng,
+          cargaTotal
+        };
       });
+
+      console.log("FORNECEDORES PRONTOS:", fornsComCarga);
       setFornecedores(fornsComCarga);
       setLoading(false);
     });
@@ -72,11 +86,11 @@ const CriarRota = () => {
         {/* COLUNA ESQUERDA: LISTA DE CARGAS */}
         <div className="col-span-12 lg:col-span-4 space-y-4">
           <div className="bg-white/10 backdrop-blur-md p-3 rounded-[2.5rem] border border-white/20">
-            <div className="flex flex-col justify-between items-center ">
-              <h4 className="text-white font-black uppercase italic text-[15px] tracking-widest flex items-center gap-2">
+            <div className="flex flex-row justify-between items-center mb-2">
+              <h4 className="text-white font-black uppercase italic text-[15px] tracking-widest flex items-center gap-2 ">
                 <Truck size={16} /> Zonas Disponiveis
               </h4>
-              <button onClick={() => setExibirZonas(!exibirZonas)} className="text-[12px] font-black uppercase text-[var(--color-primary)] transition-colors">
+              <button onClick={() => setExibirZonas(!exibirZonas)} className="!text-[11px] font-black uppercase text-[var(--color-primary)] transition-colors">
                 {exibirZonas ? 'Ocultar Zonas' : 'Ver Zonas'}
               </button>
 
@@ -153,25 +167,35 @@ const CriarRota = () => {
               ))}
 
               {/* Marcadores dos Fornecedores */}
-              {fornecedores.map((f) => (
-                <Marker key={f.id} position={[f.latitude, f.longitude]} icon={iconFornecedor}>
-                  <Popup>
-                    <div className="p-2">
-                      <h4 className="font-black text-[var(--color-primary)] uppercase italic leading-none mb-1">{f.name || f.nome}</h4>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase mb-2">
-                        <Package size={12} /> {f.cargaTotal} Toneladas Pendentes
+              {fornecedores.map((f) => {
+                // Validação: Se não for número, não tenta renderizar no mapa
+                const temCoordenadas = typeof f.latitude === 'number' && typeof f.longitude === 'number';
+
+                if (!temCoordenadas) return null;
+
+                // IMPORTANTE: Adicionamos o 'return' que faltava no seu erro ts(1109)
+                return (
+                  <Marker key={f.id} position={[f.latitude, f.longitude]} icon={iconFornecedor}>
+                    <Popup>
+                      <div className="p-2">
+                        <h4 className="font-black text-[var(--color-primary)] uppercase italic leading-none mb-1">
+                          {f.name || f.nome}
+                        </h4>
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase mb-2">
+                          <Package size={12} /> {f.cargaTotal} Toneladas Pendentes
+                        </div>
+                        <Button
+                          onClick={() => handleSelecionar(f.id)}
+                          className="w-full h-8 text-[9px] font-black uppercase italic"
+                          variant={selecionados.includes(f.id) ? "destructive" : "default"}
+                        >
+                          {selecionados.includes(f.id) ? 'Remover' : 'Adicionar à Rota'}
+                        </Button>
                       </div>
-                      <Button
-                        onClick={() => handleSelecionar(f.id)}
-                        className="w-full h-8 text-[9px] font-black uppercase italic"
-                        variant={selecionados.includes(f.id) ? "destructive" : "default"}
-                      >
-                        {selecionados.includes(f.id) ? 'Remover' : 'Adicionar à Rota'}
-                      </Button>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+                    </Popup>
+                  </Marker>
+                );
+              })}
 
               {/* Linha da Rota */}
               {coordsPolyline.length > 1 && (
