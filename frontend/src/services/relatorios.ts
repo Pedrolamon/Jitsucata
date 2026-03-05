@@ -1,5 +1,4 @@
-import { listarRotas  } from './rotas';
-import type {Rota, PontoRota} from './rotas';
+import { listarRotas } from './rotas';
 import { listarFornecedores } from './fornecedores';
 import type {Fornecedor} from '../types/fornecedor';
 

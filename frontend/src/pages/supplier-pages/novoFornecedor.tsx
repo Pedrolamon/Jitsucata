@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import api from "../services/api";
-import type { Fornecedor } from "../types/fornecedor";
+import React, { useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import type { Fornecedor } from "../../types/fornecedor";
 import {
   ArrowLeft,
   Building2,
@@ -9,25 +9,24 @@ import {
   Shield,
   UserCircle,
   PlusCircle,
-  Loader2,
 } from "lucide-react";
 
-import { Button } from "../components/ui/button";
+import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+} from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 
-const EdiçãoFornecedores = () => {
-  const { id } = useParams();
+const NovoFornecedor = () => {
+  const { register } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [fetching, setFetching] = useState(true);
+  const [password, setPassword] = useState("");
 
   const [formData, setFormData] = useState<Omit<Fornecedor, "id" | "status">>({
     name: "",
@@ -62,71 +61,40 @@ const EdiçãoFornecedores = () => {
     legalNature: "",
   });
 
-  // 1. CARREGAR DADOS DO FORNECEDOR AO ABRIR A PÁGINA
-  useEffect(() => {
-    const fetchFornecedor = async () => {
-      try {
-        setFetching(true);
-        const response = await api.get(`/fornecedores/${id}`);
-        // Preenche o formulário com os dados que vêm do banco
-        setFormData((prev) => ({
-          ...prev,
-          ...response.data,
-          address: { ...prev.address, ...response.data.address },
-          EnvironmentalLicense: {
-            ...prev.EnvironmentalLicense,
-            ...response.data.EnvironmentalLicense,
-          },
-          LegalRepresentative: {
-            ...prev.LegalRepresentative,
-            ...response.data.LegalRepresentative,
-          },
-        }));
-      } catch (err) {
-        console.error(err);
-        setError("Não foi possível carregar os dados deste fornecedor.");
-      } finally {
-        setFetching(false);
-      }
-    };
-    if (id) fetchFornecedor();
-  }, [id]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      if (!id) throw new Error("Fornecedor não encontrado");
-      await api.put(`/fornecedores/${id}`, formData);
-      alert("Dados atualizados com sucesso!");
+      await register({
+        ...formData,
+        status: true,
+        password: password,
+        perfil: "fornecedor",
+      });
+      // Retorna para a listagem após criar
       navigate("/fornecedores");
     } catch (err) {
-      setError("Erro ao cadastrar fornecedor. Verifique os dados ou conexão.");
+      setError(
+        "Erro ao cadastrar fornecedor. Verifique os dados ou se o e-mail já existe.",
+      );
     } finally {
       setLoading(false);
     }
   };
-
-  if (fetching)
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="animate-spin text-white" size={40} />
-      </div>
-    );
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Botão Voltar */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-[var(--color-primary)] transition-colors mb-4"
+        className="flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4"
       >
         <ArrowLeft size={20} /> Voltar para listagem
       </button>
 
-      <Card className="border-none shadow-2xl bg-white ">
-        <CardHeader className="border-b ">
+      <Card className="border-none shadow-2xl bg-white dark:bg-gray-900">
+        <CardHeader className="border-b bg-gray-50/50 dark:bg-gray-800/50">
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
             <PlusCircle className="text-[var(--color-primary)]" />
             Cadastrar Novo Fornecedor
@@ -186,6 +154,16 @@ const EdiçãoFornecedores = () => {
                   />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="password">Senha de Acesso</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="Phone">Telefone</Label>
                   <Input
                     id="Phone"
@@ -223,12 +201,12 @@ const EdiçãoFornecedores = () => {
                   <Input
                     id="street"
                     required
-                    value={formData.address?.street || ""}
+                    value={formData.address.street}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
                         address: {
-                          ...formData.address!,
+                          ...formData.address,
                           street: e.target.value,
                         },
                       })
@@ -454,7 +432,7 @@ const EdiçãoFornecedores = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-[var(--color-primary)] px-10"
+                className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 px-10"
               >
                 {loading ? "Salvando..." : "Salvar Fornecedor"}
               </Button>
@@ -466,4 +444,4 @@ const EdiçãoFornecedores = () => {
   );
 };
 
-export default EdiçãoFornecedores;
+export default NovoFornecedor;

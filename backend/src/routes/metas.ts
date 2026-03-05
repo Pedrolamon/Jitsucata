@@ -3,7 +3,7 @@ import { getMetas, postMetas, editMetas, deleteMetas } from "../services/metas-s
 
 const router = Router();
 
-router.get("/", async (req: Request, res: Response) => {
+router.get("/metas", async (req: Request, res: Response) => {
     try {
         const metas = await getMetas();
         return res.json(metas)
@@ -12,7 +12,7 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/meta", async (req: Request, res: Response) => {
+router.post("/metas", async (req: Request, res: Response) => {
     try {
         const { tipo, quantidade } = req.body
         const novaMeta = await postMetas({ tipo, quantidade });
@@ -22,23 +22,29 @@ router.post("/meta", async (req: Request, res: Response) => {
     }
 });
 
-router.patch("/meta/:id", async (req: Request, res: Response) => {
+router.patch("/metas/:id", async (req: Request, res: Response) => {
     try {
-        const MetaEditada = await editMetas(req.params.id);
-        res.status(200).json({ message: "Meta foi atualizada com sucesso" })
+        const { id } = req.params;
+        const { tipo, quantidade } = req.body;
 
+        await editMetas(id, { tipo, quantidade });
+        console.log(`${quantidade}`)
+
+        res.status(200).json({ message: "Meta foi atualizada com sucesso" });
     } catch (error) {
-        res.status(500).json({ message: "Erro ao atualizar meta" })
+        res.status(500).json({ message: "Erro ao atualizar meta" });
     }
+});
 
-})
-
-router.delete("/meta/:id", async (req: Request, res: Response) => {
+router.delete("/metas/:id", async (req: Request, res: Response) => {
     try {
-        const DeleteMetas = deleteMetas(req.params.id);
-        res.status(204).json({ message: "mMta atualizada com sucesso" }).send()
+        const { id } = req.params;
 
+        await deleteMetas(req.params.id);
+        return res.status(200).json({ message: "Meta deletada com sucesso" });
     } catch (error) {
-        res.status(500).json({ message: "Erro ao deletar meta" })
+        res.status(500).json({ message: "Erro ao deletar meta" });
     }
-})
+});
+
+export default router

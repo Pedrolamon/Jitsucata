@@ -1,17 +1,18 @@
 import { Router, Request, Response } from "express";
 import { Fornecedor } from "../types/express";
-import { createsupplier,getPendingSuppliers, approveSupplier, deleteSupplier, findUserById, getAllActiveSuppliers, updateSupplier } from "../services/Fornecedores-services";
+import { createsupplier, getPendingSuppliers, approveSupplier, deleteSupplier, findUserById, getAllActiveSuppliers, updateSupplier } from "../services/Fornecedores-services";
+import { getCoordsFromCEP } from "../utils/geocoding"
 
 const router = Router();
 
 //LISTAR FORNECEDORES PENDENTES(TELA DE APROVAÇÃO)
-router.get('/fornecedores/pendentes', async (req: Request, res:Response) =>{
-    try{
-        const suppliers = await getPendingSuppliers();
-        res.json(suppliers);
-    }catch(error){
-        res.status(500).json({error: "Erro ao buscar fornecedores pendentes"});
-    }
+router.get('/fornecedores/pendentes', async (req: Request, res: Response) => {
+  try {
+    const suppliers = await getPendingSuppliers();
+    res.json(suppliers);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar fornecedores pendentes" });
+  }
 });
 
 // 1. LISTAR TODOS (GET)
@@ -27,6 +28,13 @@ router.get('/fornecedores', async (req: Request, res: Response) => {
 // 2. CRIAR NOVO (POST)
 router.post('/fornecedores', async (req: Request, res: Response) => {
   try {
+    const dados = req.body;
+
+    if (dados.cep) {
+      const coords = await getCoordsFromCEP(dados.cep);
+      dados.latitude = coords.latitude;
+      dados.longitude = coords.longitude;
+    }
     const novoFornecedor = await createsupplier(req.body);
     res.status(201).json({ message: "Criado com sucesso", data: novoFornecedor });
   } catch (error) {
@@ -38,8 +46,8 @@ router.post('/fornecedores', async (req: Request, res: Response) => {
 router.get('/fornecedores/:id', async (req: Request, res: Response) => {
   try {
     const suppliers = await findUserById(req.params.id);
-    if(!suppliers) return res.status(404).json({error: "Fornecedor não encontrado"})
-        res.json(suppliers);
+    if (!suppliers) return res.status(404).json({ error: "Fornecedor não encontrado" })
+    res.json(suppliers);
   } catch (error) {
     res.status(400).json({ error: "Erro ao Buscar fornecedor" });
   }
@@ -47,21 +55,21 @@ router.get('/fornecedores/:id', async (req: Request, res: Response) => {
 
 // 4. Aprovar (patch)
 router.patch('/fornecedores/aprovar/:id', async (req: Request, res: Response) => {
-    try{
-        const aprovado = await approveSupplier(req.params.id);
-        if (!aprovado) return res.status(404).json({ error: "Fornecedor não encontrado" });
-        res.json(aprovado);
-    }catch (error) {
-        res.status(500).json({ error: "Erro ao aprovar fornecedor" });
-    }
+  try {
+    const aprovado = await approveSupplier(req.params.id);
+    if (!aprovado) return res.status(404).json({ error: "Fornecedor não encontrado" });
+    res.json(aprovado);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao aprovar fornecedor" });
+  }
 })
 
 // 5. EXCLUIR (DELETE)
 router.delete('/fornecedores/:id', async (req: Request, res: Response) => {
   try {
-   const deletado = await deleteSupplier(req.params.id);
-        if (!deletado) return res.status(404).json({ error: "Fornecedor não encontrado ou já está ativo" });
-        res.status(204).send();
+    const deletado = await deleteSupplier(req.params.id);
+    if (!deletado) return res.status(404).json({ error: "Fornecedor não encontrado ou já está ativo" });
+    res.status(204).send();
   } catch (error) {
     res.status(400).json({ error: "Erro ao excluir fornecedor" });
   }
@@ -69,19 +77,33 @@ router.delete('/fornecedores/:id', async (req: Request, res: Response) => {
 
 router.put('/fornecedores/:id', async (req: Request, res: Response) => {
   try {
-      const { id } = req.params;
-      const dadosAtualizados = req.body;
-      
-      const fornecedorAtualizado = await updateSupplier(id, dadosAtualizados);
-      
-      if (!fornecedorAtualizado) {
-          return res.status(404).json({ error: "Fornecedor não encontrado para atualizar" });
-      }
+    const { id } = req.params;
+    const dadosNovos = req.body;
 
-      res.json({ message: "Atualizado com sucesso", data: fornecedorAtualizado });
+    const fornecedorAtual = await findUserById(id);
+
+    if (!fornecedorAtual) {
+      return res.status(404).json({ error: "Fornecedor não encontrado" });
+    }
+
+    const cepMudou = dadosNovos.cep && dadosNovos.cep !== fornecedorAtual.cep;
+    const semCoordenadas = !fornecedorAtual.latitude || !fornecedorAtual.longitude;
+
+    if (cepMudou || (dadosNovos.cep && semCoordenadas)) {
+      const coords = await getCoordsFromCEP(dadosNovos.cep);
+
+      // Atualiza os dados que serão salvos com as novas coordenadas
+      dadosNovos.latitude = coords.latitude;
+      dadosNovos.longitude = coords.longitude;
+    }
+
+    // 3. Salvar as alterações
+    const fornecedorAtualizado = await updateSupplier(id, dadosNovos);
+
+    res.json({ message: "Atualizado com sucesso", data: fornecedorAtualizado });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erro ao atualizar fornecedor" });
+    console.error(error);
+    res.status(500).json({ error: "Erro ao atualizar fornecedor" });
   }
 });
 

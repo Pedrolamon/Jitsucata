@@ -20,15 +20,20 @@ export const getAllMateriais = async (status?: string): Promise<Material[]> => {
   const res = await api.get('/materiais', { params: { status } });
   return res.data;
 };
-export const getTiposMateriais = (): string[] => {
-  // Por enquanto, retorna uma lista fixa para demonstração.
-  // Em um projeto real, isso poderia vir de um banco de dados, API, ou ser definido em algum lugar.
-  return ["Plástico", "Metal", "Papel", "Vidro", "Orgânico"];
+export const getTiposMateriais = async () => {
+  const res = await api.get('/material')
+  return res.data;
 };
 export const criarMaterial = async (dados: Omit<Material, 'id' | 'status' | 'dataRegistro'>): Promise<Material> => {
   const res = await api.post('/materiais', dados);
   return res.data;
 };
+
+export const newMaterial = async (nome: string) => {
+  const res = await api.post('/material', { tipo: nome });
+  return res.data;
+};
+
 export const editarMaterial = async (id: string, dados: Partial<Omit<Material, 'id' | 'dataRegistro'>>): Promise<Material> => {
   const res = await api.put(`/materiais/${id}`, dados);
   return res.data;

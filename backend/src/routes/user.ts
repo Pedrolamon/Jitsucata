@@ -1,28 +1,33 @@
 import { Router, Request, Response } from "express";
-import { findUserByEmail, findUserById } from "../services/user-services";
+import { createuser, listarUsuarios, editarUsuario, excluirUsuario } from "../services/user-services";
 import bcrypt from "bcrypt"
 
 const router = Router();
 
-router.get("/", async (req: Request, res: Response) => {
-    const BuscarUsuario = await
-})
-
-router.post("/register", async (req: Request, res: Response) => {
+router.get("/usuarios", async (req: Request, res: Response) => {
     try {
-        const { name, email, perfil, password } = req.body;
+        const BuscarUsuario = await listarUsuarios();
+        res.json(BuscarUsuario)
+    } catch (error) {
+        res.status(500).json(`erro ao buscar usuarios ${error}`)
+    }
+});
 
-        if (!name || !password) {
-            return res.status(400).json({ message: "E-mail, senha e Cnpj são obrigatórios" })
+router.post("/register-user", async (req: Request, res: Response) => {
+    try {
+        const { nome, email, perfil, senha } = req.body;
+
+        if (!email || !senha) {
+            return res.status(400).json({ message: "E-mail, email e  são obrigatórios" })
         };
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newuser = await createsupplier({
-            ...req.body,
-            password: hashedPassword
+        const hashedPassword = await bcrypt.hash(senha, 10);
+        const newuser = await createuser({
+            nome,
+            email,
+            perfil,
+            senha: hashedPassword
         });
-
+        console.log(newuser)
         return res.status(201).json({
             message: "usuario criado com sucesso",
             userId: newuser.id
@@ -34,10 +39,31 @@ router.post("/register", async (req: Request, res: Response) => {
 
 });
 
+router.put("/usuarios/:id", async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const dadosAtualizados = req.body;
 
-router.patch
+        await editarUsuario(id, dadosAtualizados);
 
+        res.json({ message: "Usuário atualizado com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao editar usuário:", error);
+        res.status(500).json({ error: "Erro interno ao atualizar usuário." });
+    }
+});
 
-router.delete()
+router.delete("/usuarios/:id", async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        await excluirUsuario(id);
+
+        res.json({ message: "Usuário removido com sucesso!" });
+    } catch (error) {
+        console.error("Erro ao excluir usuário:", error);
+        res.status(500).json({ error: "Erro interno ao excluir usuário." });
+    }
+});
 
 export default router

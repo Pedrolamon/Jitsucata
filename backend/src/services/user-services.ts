@@ -1,56 +1,44 @@
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../database';
 import { QueryResult } from 'pg';
-import { Fornecedor } from '../types/express';
+import { Perfil, Usuario } from '../types/express';
 
-const FORNECEDOR_SELECT_FIELDS = `
+import bcrypt from "bcrypt"
+
+const USER_SELECT_FIELDS = `
     name, cnpj, stateRegistration, address, EnvironmentalLicense, LegalRepresentative,
     Phone, capacity, email, observacoes, legalNature, password, status
 `;
 
-export interface User {
-    id: string;
-    email: string;
-    password: string;
-    name: string;
-    role: string;
-    isActive: boolean;
-    status: boolean;
-}
 
-export async function findUserByEmail(email: string): Promise<User | null> {
-    const sql = `SELECT ${FORNECEDOR_SELECT_FIELDS} FROM "Fornecedores" WHERE email = $1`;
-    const result: QueryResult<User> = await query(sql, [email]);
+
+export async function findUserByEmail(email: string): Promise<Usuario | null> {
+    const sql = `SELECT ${USER_SELECT_FIELDS} FROM "User" WHERE email = $1`;
+    const result: QueryResult<Usuario> = await query(sql, [email]);
     return result.rows.length ? result.rows[0] : null;
 }
 
-export async function findUserById(id: string): Promise<Omit<User, 'password'> | null> {
-    const fieldsWithoutPassword = FORNECEDOR_SELECT_FIELDS.replace(', password', '');
-    const sql = `SELECT ${fieldsWithoutPassword} FROM "Fornecedores" WHERE id = $1`;
-    // Não inclua a coluna 'password' no resultado para o frontend
-    const result: QueryResult<Omit<User, 'password'>> = await query(sql, [id]);
+export async function findUserById(id: string): Promise<Omit<Usuario, 'senha'> | null> {
+    const fieldsWithoutPassword = USER_SELECT_FIELDS.replace(', senha', '');
+    const sql = `SELECT ${fieldsWithoutPassword} FROM "User" WHERE id = $1`;
+    const result: QueryResult<Omit<Usuario, 'senha'>> = await query(sql, [id]);
     return result.rows.length ? result.rows[0] : null;
 }
 
-export async function createuser(data: User) {
+export async function createuser(data: Usuario) {
     const id = uuidv4();
 
     try {
-        // Iniciamos a transação (dependendo do seu arquivo ../database, pode variar)
         await query('BEGIN');
-
         const saltRounds = 10;
         const senhaHash = await bcrypt.hash(data.senha || '123456', saltRounds);
 
-        await query(`
-            INSERT INTO "User" (id, name, role, phone, email)
-            VALUES ($1, $2, $3, $4, $5)`,
-            [ids.representative, data.LegalRepresentative.name, data.LegalRepresentative.cpf,
-            data.LegalRepresentative.rg, data.LegalRepresentative.position,
-            data.LegalRepresentative.phone, data.LegalRepresentative.email]
+        const result = await query(
+            `INSERT INTO "User" (id, nome, perfil, email, senha)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id, nome, email, perfil`,
+            [id, data.nome, data.perfil, data.email, data.senha]
         );
-
-
         await query('COMMIT');
         return result.rows[0];
 
@@ -59,4 +47,27 @@ export async function createuser(data: User) {
         console.error("Erro ao criar fornecedor completo:", error);
         throw error;
     }
+}
+
+export async function listarUsuarios(): Promise<Usuario[]> {
+    const result = await query('SELECT id, nome, email, perfil FROM "User" ORDER BY nome ASC');
+    return result.rows;
+}
+
+export async function editarUsuario(id: string, data: Partial<Usuario>) {
+    const sql = `UPDATE "User" SET nome = $1, email = $2, perfil = $3 WHERE id = $4`;
+    await query(sql, [data.nome, data.email, data.perfil, id]);
+}
+
+export async function excluirUsuario(id: string) {
+    await query('DELETE FROM "User" WHERE id = $1', [id]);
+}
+
+export async function listarPerfis(): Promise<Perfil[]> {
+    return ['admin', 'fornecedor', 'financeiro'];
+}
+
+export async function trocarSenha(id: string, novaSenha: string) {
+    const senhaHash = await bcrypt.hash(novaSenha, 10);
+    await query('UPDATE "User" SET password = $1 WHERE id = $2', [senhaHash, id]);
 }

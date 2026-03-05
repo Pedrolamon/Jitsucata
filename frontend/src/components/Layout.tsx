@@ -150,7 +150,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/rotas", label: "Rotas de Coleta", icon: Route },
     { href: "/metas", label: "Metas", icon: BadgeCheck },
     { href: "/usuarios", label: "Usuarios", icon: BookUser },
-    { href: "/pagamentos", label: "Pagamentos em aberto", icon: CircleDollarSign },
+    { href: "/pagamentos", label: "Pagamentos", icon: CircleDollarSign },
     { href: "/historico-pagamento", label: "Historico Pagamento", icon: ScrollText },
     { href: "/inventory", label: "Estoque", icon: Box },
     { href: "/tabela-preços", label: "Tabela de Preço", icon: Grid2x2Check },

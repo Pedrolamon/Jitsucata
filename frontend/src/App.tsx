@@ -8,11 +8,11 @@ import PriceList from './pages/Tabela-preço';
 import PaymentHistory from './pages/payment-history';
 import MaterialClassification from "./pages/material/Classificação"
 import Payments from './pages/pagamentos';
-import Inventory from './pages/inventory';
+import Inventory from './pages/inventory/inventory';
 import FinancialControl from './pages/supplier-pages/financial-control';
 import Dashboard from './pages/Dashboard';
 import Layout from './components/Layout';
-import FornecedoresList from './pages/FornecedoresList';
+import FornecedoresList from './pages/supplier-pages/FornecedoresList';
 import RegistrarMaterial from './pages/material/RegistrarMaterial';
 import MeusMateriais from './pages/Material-mercado';
 import CriarRota from './pages/logistics/CriarZonas';
@@ -24,7 +24,7 @@ import Usuarios from './pages/Usuarios';
 import TrocarSenha from './pages/auth/TrocarSenha';
 import RecuperarSenha from './pages/auth/RecuperarSenha';
 import Register from './pages/auth/Register';
-import NovoFornecedor from './pages/novoFornecedor';
+import NovoFornecedor from './pages/supplier-pages/novoFornecedor';
 import Aprovar from './pages/Aprovar';
 import EdiçãoFornecedores from './pages/ediçãoFornecedores';
 
