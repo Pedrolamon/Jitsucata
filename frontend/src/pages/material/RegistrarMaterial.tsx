@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,6 +7,13 @@ import {
   getTiposMateriais,
 } from "../../services/materiais";
 import { useAuth } from "../../contexts/AuthContext";
+=======
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { criarMaterial, newMaterial, getTiposMateriais } from '../../services/materiais';
+import { useAuth } from '../../contexts/AuthContext';
+import { ClassificaçãoMateriais } from '../../domain/materiais';
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 import {
   Weight,
   FileText,
@@ -22,15 +30,29 @@ import {
   Layers,
   FlaskConical,
   RefreshCw,
+<<<<<<< HEAD
   Plus,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
+=======
+  ChevronDown,
+} from 'lucide-react';
+import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
+
+
+interface MaterialData {
+  id: string;
+  tipo: string;
+}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 
 const RegistrarMaterial = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const fornecedorId = user?.id;
   const [abaAtiva, setAbaAtiva] = useState("false");
+<<<<<<< HEAD
   const [novoMaterial, setNovoMaterial] = useState<string>("");
 
   const [form, setForm] = useState({
@@ -48,6 +70,26 @@ const RegistrarMaterial = () => {
     placaVeiculo: "",
     Dataentrada: "",
     observacoes: "",
+=======
+  const [novoMaterial, setNovoMaterial] = useState<string>('');
+  const [listaDeMateriais, setListaDeMateriais] = useState<MaterialData[]>([]);
+  const [mostrarListaTipos, setMostrarListaTipos] = useState(false);
+
+  const [form, setForm] = useState({
+    tipo: "",
+    pesoBruto: '',
+    pesoLiquido: '',
+    contaminacao: '',
+    cambio: '',
+    quantidade: '',
+    unidade: 'kg',
+    preco: '',
+    patio: '',
+    notaFiscal: '',
+    placaVeiculo: '',
+    dataEntrada: '',
+    observacoes: '',
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
   });
 
   const [loading, setLoading] = useState(false);
@@ -55,6 +97,7 @@ const RegistrarMaterial = () => {
   const [success, setSuccess] = useState("");
 
   const fetchMateriais = async () => {
+<<<<<<< HEAD
     try {
       setLoading(true);
       const data = await getTiposMateriais();
@@ -64,6 +107,34 @@ const RegistrarMaterial = () => {
       setNovoMaterial(data);
     } catch (error) {
       console.error("Erro ao buscar materiais:", error);
+=======
+    // 1) Sempre carregar a lista base a partir da Classificação de Materiais
+    const baseMateriais: MaterialData[] = ClassificaçãoMateriais.map((m) => ({
+      id: m.Titulo,
+      tipo: m.Titulo,
+    }));
+
+    setListaDeMateriais(baseMateriais);
+
+    if (baseMateriais.length > 0 && !form.tipo) {
+      setForm(prev => ({ ...prev, tipo: baseMateriais[0].tipo }));
+    }
+
+    // 2) Opcional: tentar complementar com tipos cadastrados no backend (se existirem)
+    try {
+      setLoading(true);
+      const data = await getTiposMateriais();
+
+      const extras: MaterialData[] = data
+        .filter((d: any) => !baseMateriais.some((b) => b.tipo === d.tipo))
+        .map((d: any) => ({ id: d.id, tipo: d.tipo }));
+
+      if (extras.length > 0) {
+        setListaDeMateriais(prev => [...prev, ...extras]);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar materiais adicionais:", error);
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     } finally {
       setLoading(false);
     }
@@ -71,6 +142,10 @@ const RegistrarMaterial = () => {
 
   useEffect(() => {
     fetchMateriais();
+<<<<<<< HEAD
+=======
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
   }, []);
 
   const handlenovoMaterial = async (e: React.FormEvent) => {
@@ -83,23 +158,36 @@ const RegistrarMaterial = () => {
     try {
       await newMaterial(novoMaterial);
 
+<<<<<<< HEAD
       setSuccess("Material criado com sucesso!");
       setNovoMaterial("");
       setAbaAtiva("false");
       window.location.reload();
     } catch (err) {
       setError("Erro ao criar novo material.");
+=======
+      setSuccess('Material criado com sucesso!');
+      setNovoMaterial('');
+      setAbaAtiva("false");
+      window.location.reload();
+    } catch (err) {
+      setError('Erro ao criar novo material.');
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+<<<<<<< HEAD
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => {
+=======
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -121,9 +209,20 @@ const RegistrarMaterial = () => {
     setLoading(true);
     try {
       await criarMaterial({
-        ...form,
+        tipo: form.tipo,
         quantidade: Number(form.quantidade),
+        unidade: form.unidade,
         fornecedorId: fornecedorId,
+        observacoes: form.observacoes || undefined,
+        patio: form.patio || undefined,
+        notaFiscal: form.notaFiscal || undefined,
+        placaVeiculo: form.placaVeiculo || undefined,
+        pesoBruto: form.pesoBruto ? Number(form.pesoBruto) : undefined,
+        pesoLiquido: form.pesoLiquido ? Number(form.pesoLiquido) : undefined,
+        contaminacao: form.contaminacao ? Number(form.contaminacao) : undefined,
+        cambio: form.cambio ? Number(form.cambio) : undefined,
+        preco: form.preco ? Number(form.preco) : undefined,
+        dataEntrada: form.dataEntrada || undefined,
       });
       setSuccess("Material registrado e enviado ao estoque!");
       setTimeout(() => navigate("/inventory"), 1500);
@@ -138,7 +237,11 @@ const RegistrarMaterial = () => {
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-white/10 max-w-xl animate-in slide-in-from-bottom-4 duration-500">
           <form onSubmit={handlenovoMaterial}>
+<<<<<<< HEAD
             <div className="flex justify-between items-center mb-5">
+=======
+            <div className='flex justify-between items-center mb-5'>
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
               <label className="text-[18px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
                 Material
               </label>
@@ -149,12 +252,18 @@ const RegistrarMaterial = () => {
                 <ArrowLeft size={18} className="mr-2" /> Voltar
               </Button>
             </div>
+<<<<<<< HEAD
             <div className="flex gap-5">
               <div>
                 <Scale
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
                   size={20}
                 />
+=======
+            <div className='flex gap-5'>
+              <div>
+                <Scale className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 <input
                   name="Nome"
                   type="text"
@@ -162,7 +271,11 @@ const RegistrarMaterial = () => {
                   value={novoMaterial}
                   onChange={(e) => setNovoMaterial(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+<<<<<<< HEAD
                   // required
+=======
+                // required
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 />
               </div>
               <Button
@@ -170,6 +283,7 @@ const RegistrarMaterial = () => {
                 disabled={loading}
                 className="flex-1 h-16 !bg-[var(--color-primary)] hover:bg-[#BF5A1B] text-white font-black uppercase italic rounded-2xl shadow-xl transition-all"
               >
+<<<<<<< HEAD
                 {loading ? (
                   "Processando..."
                 ) : (
@@ -177,18 +291,27 @@ const RegistrarMaterial = () => {
                     <PlusCircle className="mr-2" /> Criar material
                   </>
                 )}
+=======
+                {loading ? "Processando..." : <><PlusCircle className="mr-2" /> Criar material</>}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
               </Button>
             </div>
           </form>
         </div>
+<<<<<<< HEAD
       </div>
     );
+=======
+      </div >
+    )
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
   }
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
+<<<<<<< HEAD
           <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">
             Entrada Manual
           </h2>
@@ -204,6 +327,14 @@ const RegistrarMaterial = () => {
           >
             <Plus size={18} className="" /> Criar Material
           </Button>
+=======
+          <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter">Entrada Manual</h2>
+          <p className="text-white/70 text-xs font-medium uppercase tracking-widest">Registro de novos lotes no sistema</p>
+
+        </div>
+
+        <div className=' flex items-center gap-8'>
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 
           <Button
             onClick={() => navigate(-1)}
@@ -263,6 +394,7 @@ const RegistrarMaterial = () => {
 
         {/* Direita: Formulário de Registro */}
         <div className="col-span-12 lg:col-span-8">
+<<<<<<< HEAD
           <form
             onSubmit={handleSubmit}
             className="bg-white p-8 rounded-[3rem] shadow-2xl space-y-8"
@@ -274,6 +406,17 @@ const RegistrarMaterial = () => {
                   1. Selecione o Tipo de Material
                 </label>
                 <div className="flex items-center">
+=======
+          <form onSubmit={handleSubmit} className="bg-white p-8 rounded-[3rem] shadow-2xl space-y-8">
+
+            {/* Seletor de Tipo de Material (Dropdown) */}
+            <section>
+              <div className='flex justify-between items-center gap-4 relative'>
+                <label className="text-[11px] font-black uppercase text-gray-400 mb-4 block tracking-widest">
+                  1. Selecione o Tipo de Material
+                </label>
+                <div className='flex items-center'>
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                   <select
                     name="unidade"
                     value={form.unidade}
@@ -286,18 +429,87 @@ const RegistrarMaterial = () => {
                 </div>
               </div>
 
+<<<<<<< HEAD
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <p className="text-gray-400 text-xs italic">
                   Aguardando carregamento dos materiais.
                 </p>
+=======
+              <div className="mt-2 relative">
+                <button
+                  type="button"
+                  onClick={() => setMostrarListaTipos((prev) => !prev)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-black uppercase italic text-gray-500 hover:border-orange-300 transition-all"
+                >
+                  <span className="truncate">
+                    {form.tipo || 'Selecione um tipo de material'}
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", mostrarListaTipos && "rotate-180")} />
+                </button>
+
+                {mostrarListaTipos && (
+                  <div className="absolute z-20 mt-2 w-full max-h-64 overflow-auto bg-white border border-gray-100 rounded-2xl shadow-xl">
+                    {listaDeMateriais.length > 0 ? (
+                      listaDeMateriais.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => {
+                            setForm((prev) => ({ ...prev, tipo: t.tipo }));
+                            setMostrarListaTipos(false);
+                          }}
+                          className={cn(
+                            "w-full text-left px-4 py-2 text-[11px] font-black uppercase tracking-tight hover:bg-orange-50",
+                            form.tipo === t.tipo
+                              ? "text-[var(--color-primary)] bg-orange-50"
+                              : "text-gray-500"
+                          )}
+                        >
+                          {t.tipo}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-[11px] text-gray-400">
+                        Nenhum material encontrado.
+                      </div>
+                    )}
+                  </div>
+                )}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
               </div>
             </section>
 
             {/* Quantidade e Unidade */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+<<<<<<< HEAD
               <div>
                 <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
                   2. Peso Bruto
+=======
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  2. Peso Bruto
+                </label>
+                <div className="relative">
+                  <Scale className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="pesoBruto"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.pesoBruto}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  3. Peso líquido
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </label>
                 <div className="relative">
                   <Scale
@@ -349,6 +561,25 @@ const RegistrarMaterial = () => {
                     size={20}
                   />
                   <input
+                    name="pesoLiquido"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.pesoLiquido}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  4. Quantidade do Lote
+                </label>
+                <div className="relative">
+                  <Layers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
                     name="quantidade"
                     type="number"
                     step="0.01"
@@ -366,6 +597,7 @@ const RegistrarMaterial = () => {
                   5. Índice de contaminação
                 </label>
                 <div className="relative">
+<<<<<<< HEAD
                   <FlaskConical
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
                     size={20}
@@ -528,12 +760,146 @@ const RegistrarMaterial = () => {
                     step="0.01"
                     placeholder="0.00"
                     value={form.Dataentrada}
+=======
+                  <FlaskConical className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="contaminacao"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.contaminacao}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                     onChange={handleChange}
                     className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
                     required
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  6. Placa do veículo
+                </label>
+                <div className="relative">
+                  <Truck className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="placaVeiculo"
+                    type="text"
+                    placeholder="ABC-1234"
+                    value={form.placaVeiculo}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  7. Preço
+                </label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="preco"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.preco}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  8. Câmbio
+                </label>
+                <div className="relative">
+                  <RefreshCw className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="cambio"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={form.cambio}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  9. Fornecedor
+                </label>
+                <div className="relative">
+                  <Factory className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="fornecedor"
+                    type="text"
+                    value={user?.name || ''}
+                    readOnly
+                    className="w-full pl-12 pr-4 py-4 bg-gray-100 border-none rounded-2xl text-lg font-bold outline-none text-gray-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  10. Pátio estocado
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="patio"
+                    type="text"
+                    placeholder="Pátio / Baia"
+                    value={form.patio}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  11. Nota Fiscal
+                </label>
+                <div className="relative">
+                  <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="notaFiscal"
+                    type="text"
+                    placeholder="000.000.000"
+                    value={form.notaFiscal}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  12. Data de entrada
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="dataEntrada"
+                    type="date"
+                    value={form.dataEntrada}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+
             </section>
 
             {/* Observações */}

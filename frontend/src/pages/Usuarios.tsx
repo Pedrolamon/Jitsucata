@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
 import {
   listarUsuarios,
@@ -17,6 +18,18 @@ import {
   X,
   Search,
 } from "lucide-react";
+=======
+import React, { useEffect, useState } from 'react';
+import {
+  listarUsuarios, criarUsuario, editarUsuario,
+  excluirUsuario, trocarSenha, listarPerfis
+} from '../services/usuarios';
+import type { Usuario, Perfil } from '../services/usuarios';
+import {
+  UserPlus, ShieldCheck, Key,
+  Trash2, Edit3, X, Search
+} from 'lucide-react';
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
 
@@ -67,11 +80,17 @@ const Usuarios = () => {
     setForm({ nome: u.nome, email: u.email, perfil: u.perfil, senha: "" });
   };
 
+<<<<<<< HEAD
   const filteredUsuarios = usuarios.filter(
     (u) =>
       (u.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (perfilFiltro === "todos" || u.perfil === perfilFiltro),
+=======
+  const filteredUsuarios = usuarios.filter(u =>
+    (u.nome.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (perfilFiltro === 'todos' || u.perfil === perfilFiltro)
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
   );
 
   return (
@@ -102,6 +121,10 @@ const Usuarios = () => {
       </div>
 
       <div className="grid grid-cols-12 gap-6">
+<<<<<<< HEAD
+=======
+
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
         {/* LADO ESQUERDO: Formulário de Cadastro */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
           <div className="bg-white p-6 rounded-[2rem] shadow-2xl border border-white/20">
@@ -116,18 +139,26 @@ const Usuarios = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
+<<<<<<< HEAD
                 <label className="text-[10px] font-black uppercase text-gray-400 ml-1">
                   Nome Completo
                 </label>
                 <input
                   value={form.nome}
                   onChange={(e) => setForm({ ...form, nome: e.target.value })}
+=======
+                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Nome Completo</label>
+                <input
+                  value={form.nome}
+                  onChange={e => setForm({ ...form, nome: e.target.value })}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                   className="w-full p-3 bg-[var(--bg-input)]  border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500/20 outline-none"
                   required
                 />
               </div>
 
               <div>
+<<<<<<< HEAD
                 <label className="text-[10px] font-black uppercase text-gray-400 ml-1">
                   E-mail de Acesso
                 </label>
@@ -135,12 +166,20 @@ const Usuarios = () => {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
+=======
+                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">E-mail de Acesso</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                   className="w-full p-3 bg-[var(--bg-input)]  border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500/20 outline-none"
                   required
                 />
               </div>
 
               <div>
+<<<<<<< HEAD
                 <label className="text-[10px] font-black uppercase text-gray-400 ml-1">
                   Nível de Permissão
                 </label>
@@ -149,6 +188,12 @@ const Usuarios = () => {
                   onChange={(e) =>
                     setForm({ ...form, perfil: e.target.value as Perfil })
                   }
+=======
+                <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Nível de Permissão</label>
+                <select
+                  value={form.perfil}
+                  onChange={e => setForm({ ...form, perfil: e.target.value as Perfil })}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                   className="w-full p-3 bg-[var(--bg-input)]  border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500/20 outline-none"
                 >
                   {perfis.map((p) => (
@@ -161,6 +206,7 @@ const Usuarios = () => {
 
               {!editId && (
                 <div>
+<<<<<<< HEAD
                   <label className="text-[10px] font-black uppercase text-gray-400 ml-1">
                     Senha Inicial
                   </label>
@@ -170,6 +216,13 @@ const Usuarios = () => {
                     onChange={(e) =>
                       setForm({ ...form, senha: e.target.value })
                     }
+=======
+                  <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Senha Inicial</label>
+                  <input
+                    type="password"
+                    value={form.senha}
+                    onChange={e => setForm({ ...form, senha: e.target.value })}
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                     className="w-full p-3 bg-[var(--bg-input)] border-none rounded-2xl text-sm focus:ring-2 focus:ring-orange-500/20 outline-none"
                     required
                   />
@@ -177,6 +230,7 @@ const Usuarios = () => {
               )}
 
               <div className="pt-4 flex gap-2">
+<<<<<<< HEAD
                 <Button
                   type="submit"
                   className="flex-1  text-[var(--color-primary)] font-black uppercase italic py-6 rounded-2xl shadow-lg border !border-orange-500/20"
@@ -197,6 +251,13 @@ const Usuarios = () => {
                     }}
                     className="bg-gray-100 text-gray-500 hover:bg-gray-200 p-4 rounded-2xl"
                   >
+=======
+                <Button type="submit" className="flex-1  text-[var(--color-primary)] font-black uppercase italic py-6 rounded-2xl shadow-lg border !border-orange-500/20">
+                  {editId ? 'Salvar Alterações' : 'Criar Conta'}
+                </Button>
+                {editId && (
+                  <Button type="button" onClick={() => { setEditId(null); setForm({ nome: '', email: '', perfil: 'fornecedor', senha: '' }) }} className="bg-gray-100 text-gray-500 hover:bg-gray-200 p-4 rounded-2xl">
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                     <X size={20} />
                   </Button>
                 )}
@@ -207,6 +268,7 @@ const Usuarios = () => {
           {/* Card de Informação Útil */}
           <div className="bg-blue-600 p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
             <ShieldCheck className="absolute -right-4 -bottom-4 h-24 w-24 text-white/10" />
+<<<<<<< HEAD
             <h4 className="font-black uppercase italic text-sm mb-2">
               Segurança
             </h4>
@@ -214,6 +276,11 @@ const Usuarios = () => {
               Usuários com perfil <b>Admin</b> têm acesso total às
               configurações, enquanto <b>Fornecedores</b> acessam apenas o
               mercado.
+=======
+            <h4 className="font-black uppercase italic text-sm mb-2">Segurança</h4>
+            <p className="text-blue-100 text-xs leading-relaxed">
+              Usuários com perfil <b>Admin</b> têm acesso total às configurações, enquanto <b>Fornecedores</b> acessam apenas o mercado.
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
             </p>
           </div>
         </div>
@@ -221,15 +288,23 @@ const Usuarios = () => {
         {/* LADO DIREITO: Lista de Usuários */}
         <div className="col-span-12 lg:col-span-8 space-y-4">
           <div className="flex gap-2 mb-2">
+<<<<<<< HEAD
             {["todos", ...perfis].map((p) => (
+=======
+            {['todos', ...perfis].map((p) => (
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
               <button
                 key={p}
                 onClick={() => setPerfilFiltro(p)}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all",
+<<<<<<< HEAD
                   perfilFiltro === p
                     ? "bg-white text-[var(--color-primary)] shadow-lg"
                     : "bg-white/10 text-[var(--color-primary)] hover:bg-white/20",
+=======
+                  perfilFiltro === p ? "bg-white text-[var(--color-primary)] shadow-lg" : "bg-white/10 text-[var(--color-primary)] hover:bg-white/20"
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 )}
               >
                 {p}
@@ -255,12 +330,61 @@ const Usuarios = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {loading ? (
+<<<<<<< HEAD
                     <tr>
                       <td
                         colSpan={3}
                         className="py-20 text-center text-gray-400 font-medium italic"
                       >
                         Carregando usuários...
+=======
+                    <tr><td colSpan={3} className="py-20 text-center text-gray-400 font-medium italic">Carregando usuários...</td></tr>
+                  ) : filteredUsuarios.map(u => (
+                    <tr key={u.id} className="group hover:bg-orange-50/30 transition-all">
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-2xl bg-gray-100 flex items-center justify-center text-[var(--color-primary)] font-black group-hover:bg-white transition-all shadow-sm">
+                            {u.nome.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-sm font-black text-gray-800 leading-none">{u.nome}</div>
+                            <div className="text-[11px] text-gray-400 mt-1">{u.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className={cn(
+                          "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter",
+                          u.perfil === 'admin' && "bg-purple-100 text-purple-600",
+                          u.perfil === 'financeiro' && "bg-emerald-100 text-emerald-600",
+                          u.perfil === 'fornecedor' && "bg-blue-100 text-blue-600"
+                        )}>
+                          {u.perfil}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex justify-center gap-2">
+                          <button onClick={() => handleEdit(u)} className="p-2 text-[var(--color-primary)] hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Editar">
+                            <Edit3 size={16} />
+                          </button>
+
+                          {/* Botão Trocar Senha (abre um prompt rápido) */}
+                          <button
+                            onClick={async () => {
+                              const p = prompt('Nova senha para ' + u.nome);
+                              if (p) { await trocarSenha(u.id, p); alert('Sucesso!'); }
+                            }}
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all"
+                            title="Resetar Senha"
+                          >
+                            <Key size={16} />
+                          </button>
+
+                          <button onClick={() => excluirUsuario(u.id).then(fetchUsuarios)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Excluir">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                       </td>
                     </tr>
                   ) : (

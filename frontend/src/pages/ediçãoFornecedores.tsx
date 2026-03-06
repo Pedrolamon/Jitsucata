@@ -69,6 +69,7 @@ const EdiçãoFornecedores = () => {
         setFetching(true);
         const response = await api.get(`/fornecedores/${id}`);
         // Preenche o formulário com os dados que vêm do banco
+<<<<<<< HEAD
         setFormData((prev) => ({
           ...prev,
           ...response.data,
@@ -81,6 +82,14 @@ const EdiçãoFornecedores = () => {
             ...prev.LegalRepresentative,
             ...response.data.LegalRepresentative,
           },
+=======
+        setFormData(prev => ({
+          ...prev,
+          ...response.data,
+          address: { ...prev.address, ...response.data.address },
+          EnvironmentalLicense: { ...prev.EnvironmentalLicense, ...response.data.EnvironmentalLicense },
+          LegalRepresentative: { ...prev.LegalRepresentative, ...response.data.LegalRepresentative }
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
         }));
       } catch (err) {
         console.error(err);
@@ -97,7 +106,11 @@ const EdiçãoFornecedores = () => {
     setError("");
     setLoading(true);
     try {
+<<<<<<< HEAD
       if (!id) throw new Error("Fornecedor não encontrado");
+=======
+      if (!id) throw new Error("Fornecedor não encontrado")
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
       await api.put(`/fornecedores/${id}`, formData);
       alert("Dados atualizados com sucesso!");
       navigate("/fornecedores");
@@ -138,6 +151,10 @@ const EdiçãoFornecedores = () => {
 
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
+<<<<<<< HEAD
+=======
+
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                 {error}
@@ -152,6 +169,7 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Nome Fantasia</Label>
+<<<<<<< HEAD
                   <Input
                     id="name"
                     required
@@ -208,6 +226,25 @@ const EdiçãoFornecedores = () => {
                       })
                     }
                   />
+=======
+                  <Input id="name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="cnpj">CNPJ</Label>
+                  <Input id="cnpj" required placeholder="00.000.000/0000-00" value={formData.cnpj} onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">E-mail Corporativo</Label>
+                  <Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="Phone">Telefone</Label>
+                  <Input id="Phone" required value={formData.Phone} onChange={(e) => setFormData({ ...formData, Phone: e.target.value })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="stateRegistration">Inscrição Estadual</Label>
+                  <Input id="stateRegistration" value={formData.stateRegistration} onChange={(e) => setFormData({ ...formData, stateRegistration: e.target.value })} />
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
@@ -220,6 +257,7 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="grid gap-2 md:col-span-2">
                   <Label htmlFor="street">Logradouro (Rua/Av)</Label>
+<<<<<<< HEAD
                   <Input
                     id="street"
                     required
@@ -296,6 +334,25 @@ const EdiçãoFornecedores = () => {
                       })
                     }
                   />
+=======
+                  <Input id="street" required value={formData.address?.street || ""} onChange={(e) => setFormData({ ...formData, address: { ...formData.address!, street: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="number">Número</Label>
+                  <Input id="number" required value={formData.address.number} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, number: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="neighborhood">Bairro</Label>
+                  <Input id="neighborhood" required value={formData.address.neighborhood} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, neighborhood: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="city">Cidade</Label>
+                  <Input id="city" required value={formData.address.city} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="state">Estado (UF)</Label>
+                  <Input id="state" required value={formData.address.state} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, state: e.target.value } })} />
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
@@ -308,6 +365,7 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="LicenseNumber">Nº da Licença</Label>
+<<<<<<< HEAD
                   <Input
                     id="LicenseNumber"
                     value={formData.EnvironmentalLicense.numero}
@@ -366,6 +424,21 @@ const EdiçãoFornecedores = () => {
                       setFormData({ ...formData, capacity: e.target.value })
                     }
                   />
+=======
+                  <Input id="LicenseNumber" value={formData.EnvironmentalLicense.numero} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, numero: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="IssuingBody">Órgão Emissor</Label>
+                  <Input id="IssuingBody" placeholder="Ex: INEA" value={formData.EnvironmentalLicense.IssuingBody} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, IssuingBody: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="Validity">Validade</Label>
+                  <Input id="Validity" type="date" value={formData.EnvironmentalLicense.validity} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, validity: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="capacity">Capacidade Geração (T/Mês)</Label>
+                  <Input id="capacity" type="number" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
@@ -378,6 +451,7 @@ const EdiçãoFornecedores = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="legalName">Nome Completo</Label>
+<<<<<<< HEAD
                   <Input
                     id="legalName"
                     value={formData.LegalRepresentative.name}
@@ -439,6 +513,21 @@ const EdiçãoFornecedores = () => {
                       })
                     }
                   />
+=======
+                  <Input id="legalName" value={formData.LegalRepresentative.name} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, name: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="legalEmail">E-mail de Contato</Label>
+                  <Input id="legalEmail" value={formData.LegalRepresentative.email} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, email: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="legalPhone">Telefone Direto</Label>
+                  <Input id="legalPhone" value={formData.LegalRepresentative.phone} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, phone: e.target.value } })} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="legalPhone">CPF</Label>
+                  <Input id="legalPhone" value={formData.LegalRepresentative.cpf} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, cpf: e.target.value } })} />
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
@@ -451,11 +540,15 @@ const EdiçãoFornecedores = () => {
               >
                 Cancelar
               </Button>
+<<<<<<< HEAD
               <Button
                 type="submit"
                 disabled={loading}
                 className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-[var(--color-primary)] px-10"
               >
+=======
+              <Button type="submit" disabled={loading} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 text-[var(--color-primary)] px-10">
+>>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 {loading ? "Salvando..." : "Salvar Fornecedor"}
               </Button>
             </div>

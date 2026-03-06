@@ -5,15 +5,22 @@ export interface ItemEstoque {
     material: string;
     quantidade: number;
     unidade: string;
-    status: 'disponivel' | 'reservado' | 'aguardando_triagem';
+    status: 'disponivel' | 'reservado' | 'aguardando_triagem' | string;
     ultima_entrada: string;
+    patio?: string;
+    fornecedorId?: string;
+    notaFiscal?: string;
 }
 
-export const listarEstoque = async (busca?: string) => {
-    const response = await api.get('/estoque', { params: { busca } });
+export interface FiltrosEstoque {
+    busca?: string;
+    status?: string;
+    material?: string;
+    dataInicio?: string;
+    dataFim?: string;
+}
+
+export const listarEstoque = async (filtros: FiltrosEstoque = {}): Promise<ItemEstoque[]> => {
+    const response = await api.get('/materiais', { params: filtros });
     return response.data;
 };
-
-export const ItemEstoque = async () => {
-
-}
