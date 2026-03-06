@@ -6,13 +6,11 @@ const router = Router();
 
 router.get("/materiais", async (req: Request, res: Response) => {
     try {
-<<<<<<< HEAD
         const inventory = await getInventory();
         return res.json(inventory)
     } catch (error) {
         res.status(500).json({ message: "erro ao buscar inventario" })
 
-=======
         const { busca, status, material, dataInicio, dataFim } = req.query;
         const inventory = await getInventory({
             busca: busca as string | undefined,
@@ -22,27 +20,28 @@ router.get("/materiais", async (req: Request, res: Response) => {
             dataFim: dataFim as string | undefined
         });
         return res.json(inventory);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Erro ao buscar inventário" });
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
-    }
+    } 
 });
 
 router.post("/materiais", async (req: Request, res: Response) => {
     try {
-<<<<<<< HEAD
-        const { material, quantidade, unidade, status, entrada } = req.body
-        return res.status(200).json({ message: "Material adiciona ao estoque com sucesso" });
-    } catch (error) {
-
-=======
+        // 1. Chama a função que realmente salva no banco (postInventory)
         const novoMaterial = await postInventory(req.body);
-        return res.status(201).json(novoMaterial);
+
+        // 2. Se deu certo, retorna o status 201 (Created) com o objeto criado
+        return res.status(201).json({
+            message: "Material adicionado ao estoque com sucesso",
+            data: novoMaterial
+        });
+
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Erro ao adicionar material ao estoque" });
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
+        // 3. Se houver erro (banco fora, dados inválidos), cai aqui
+        console.error("Erro ao adicionar material:", error);
+        
+        return res.status(500).json({ 
+            message: "Erro ao adicionar material ao estoque",
+            error: error instanceof Error ? error.message : "Erro desconhecido"
+        });
     }
 });
 
@@ -69,21 +68,6 @@ router.get("/material", async (req: Request, res: Response) => {
     }
 });
 
-<<<<<<< HEAD
-router.patch("/inventory/:id", async (req: Request, res: Response) => {
-    try {
-
-    } catch (error) {
-
-    }
-});
-
-router.delete("/inventory/:id", async (req: Request, res: Response) => {
-    try {
-
-    } catch (error) {
-
-=======
 router.patch("/materiais/:id", async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -91,7 +75,7 @@ router.patch("/materiais/:id", async (req: Request, res: Response) => {
         return res.json(atualizado);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Erro ao atualizar material do estoque" });
+            return res.status(500).json({ message: "Erro ao atualizar material do estoque" });
     }
 });
 
@@ -103,7 +87,6 @@ router.delete("/materiais/:id", async (req: Request, res: Response) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Erro ao remover material do estoque" });
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     }
 });
 

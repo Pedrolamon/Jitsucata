@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -21,35 +20,15 @@ import {
 } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-=======
-import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import type { Fornecedor } from '../../types/fornecedor';
-import { cn } from "../../lib/utils";
-import { ArrowLeft, Building2, MapPin, Shield, UserCircle, PlusCircle } from 'lucide-react';
-
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 
 const NovoFornecedor = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-<<<<<<< HEAD
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
 
   const [formData, setFormData] = useState<Omit<Fornecedor, "id" | "status">>({
-=======
-  const [error, setError] = useState('');
-  const [password, setPassword] = useState("");
-
-  const [formData, setFormData] = useState<Omit<Fornecedor, 'id' | 'status'>>({
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     name: "",
     cnpj: "",
     stateRegistration: "",
@@ -61,6 +40,7 @@ const NovoFornecedor = () => {
       state: "",
       cep: "",
       neighborhood: "",
+      
     },
     EnvironmentalLicense: {
       numero: "",
@@ -84,11 +64,7 @@ const NovoFornecedor = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
     setError("");
-=======
-    setError('');
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     setLoading(true);
     try {
       await register({
@@ -98,17 +74,11 @@ const NovoFornecedor = () => {
         perfil: "fornecedor",
       });
       // Retorna para a listagem após criar
-<<<<<<< HEAD
       navigate("/fornecedores");
     } catch (err) {
       setError(
         "Erro ao cadastrar fornecedor. Verifique os dados ou se o e-mail já existe.",
       );
-=======
-      navigate('/fornecedores');
-    } catch (err) {
-      setError('Erro ao cadastrar fornecedor. Verifique os dados ou se o e-mail já existe.');
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     } finally {
       setLoading(false);
     }
@@ -130,21 +100,13 @@ const NovoFornecedor = () => {
             <PlusCircle className="text-[var(--color-primary)]" />
             Cadastrar Novo Fornecedor
           </CardTitle>
-<<<<<<< HEAD
           <p className="text-sm text-muted-foreground">
             Preencha os dados abaixo para registrar um novo parceiro no sistema.
           </p>
-=======
-          <p className="text-sm text-muted-foreground">Preencha os dados abaixo para registrar um novo parceiro no sistema.</p>
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
         </CardHeader>
 
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-<<<<<<< HEAD
-=======
-
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                 {error}
@@ -159,7 +121,6 @@ const NovoFornecedor = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Nome Fantasia</Label>
-<<<<<<< HEAD
                   <Input
                     id="name"
                     required
@@ -226,29 +187,6 @@ const NovoFornecedor = () => {
                       })
                     }
                   />
-=======
-                  <Input id="name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="cnpj">CNPJ</Label>
-                  <Input id="cnpj" required placeholder="00.000.000/0000-00" value={formData.cnpj} onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">E-mail Corporativo</Label>
-                  <Input id="email" type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="password">Senha de Acesso</Label>
-                  <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="Phone">Telefone</Label>
-                  <Input id="Phone" required value={formData.Phone} onChange={(e) => setFormData({ ...formData, Phone: e.target.value })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="stateRegistration">Inscrição Estadual</Label>
-                  <Input id="stateRegistration" value={formData.stateRegistration} onChange={(e) => setFormData({ ...formData, stateRegistration: e.target.value })} />
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
@@ -261,7 +199,6 @@ const NovoFornecedor = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="grid gap-2 md:col-span-2">
                   <Label htmlFor="street">Logradouro (Rua/Av)</Label>
-<<<<<<< HEAD
                   <Input
                     id="street"
                     required
@@ -338,25 +275,6 @@ const NovoFornecedor = () => {
                       })
                     }
                   />
-=======
-                  <Input id="street" required value={formData.address.street} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, street: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="number">Número</Label>
-                  <Input id="number" required value={formData.address.number} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, number: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="neighborhood">Bairro</Label>
-                  <Input id="neighborhood" required value={formData.address.neighborhood} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, neighborhood: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="city">Cidade</Label>
-                  <Input id="city" required value={formData.address.city} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="state">Estado (UF)</Label>
-                  <Input id="state" required value={formData.address.state} onChange={(e) => setFormData({ ...formData, address: { ...formData.address, state: e.target.value } })} />
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
@@ -369,7 +287,6 @@ const NovoFornecedor = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="LicenseNumber">Nº da Licença</Label>
-<<<<<<< HEAD
                   <Input
                     id="LicenseNumber"
                     value={formData.EnvironmentalLicense.numero}
@@ -428,21 +345,6 @@ const NovoFornecedor = () => {
                       setFormData({ ...formData, capacity: e.target.value })
                     }
                   />
-=======
-                  <Input id="LicenseNumber" value={formData.EnvironmentalLicense.numero} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, numero: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="IssuingBody">Órgão Emissor</Label>
-                  <Input id="IssuingBody" placeholder="Ex: INEA" value={formData.EnvironmentalLicense.IssuingBody} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, IssuingBody: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="Validity">Validade</Label>
-                  <Input id="Validity" type="date" value={formData.EnvironmentalLicense.validity} onChange={(e) => setFormData({ ...formData, EnvironmentalLicense: { ...formData.EnvironmentalLicense, validity: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="capacity">Capacidade Geração (T/Mês)</Label>
-                  <Input id="capacity" type="number" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} />
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
@@ -455,7 +357,6 @@ const NovoFornecedor = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="legalName">Nome Completo</Label>
-<<<<<<< HEAD
                   <Input
                     id="legalName"
                     value={formData.LegalRepresentative.name}
@@ -517,27 +418,11 @@ const NovoFornecedor = () => {
                       })
                     }
                   />
-=======
-                  <Input id="legalName" value={formData.LegalRepresentative.name} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, name: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="legalEmail">E-mail de Contato</Label>
-                  <Input id="legalEmail" value={formData.LegalRepresentative.email} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, email: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="legalPhone">Telefone Direto</Label>
-                  <Input id="legalPhone" value={formData.LegalRepresentative.phone} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, phone: e.target.value } })} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="legalPhone">CPF</Label>
-                  <Input id="legalPhone" value={formData.LegalRepresentative.cpf} onChange={(e) => setFormData({ ...formData, LegalRepresentative: { ...formData.LegalRepresentative, cpf: e.target.value } })} />
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 </div>
               </div>
             </div>
 
             <div className="flex justify-end gap-4 pt-6">
-<<<<<<< HEAD
               <Button
                 type="button"
                 variant="outline"
@@ -550,12 +435,6 @@ const NovoFornecedor = () => {
                 disabled={loading}
                 className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 px-10"
               >
-=======
-              <Button type="button" variant="outline" onClick={() => navigate('/fornecedores')}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={loading} className="bg-[var(--color-primary)] hover:bg-[var(--color-primary)]/90 px-10">
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                 {loading ? "Salvando..." : "Salvar Fornecedor"}
               </Button>
             </div>
@@ -566,8 +445,4 @@ const NovoFornecedor = () => {
   );
 };
 
-<<<<<<< HEAD
 export default NovoFornecedor;
-=======
-export default NovoFornecedor;
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2

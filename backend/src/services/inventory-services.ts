@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import { query } from "../database"; // Importe sua função de query
 import { v4 as uuidv4 } from "uuid";
 
@@ -7,15 +7,11 @@ interface material {
     tipo: string,
 }
 
-export async function getInventory() {
-    const result = await query(
-        ``
-    );
-    return result.rows
-}
 
-export async function postInventory() {
 
+export interface TipoMaterial {
+    id?: string;
+    tipo: string;
 }
 
 export async function postMaterial(dados: material) {
@@ -24,14 +20,8 @@ export async function postMaterial(dados: material) {
          VALUES ($1, $2, NOW())
          RETURNING *`,
         [dados.id, dados.tipo]
-=======
-import { query } from "../database";
-import { v4 as uuidv4 } from "uuid";
-
-// Tipos para catálogo de materiais (ex.: Ferro pesado, Alumínio perfil)
-export interface TipoMaterial {
-    id?: string;
-    tipo: string;
+    );
+    return result.rows[0]
 }
 
 // Filtros aceitos na listagem de inventário
@@ -201,37 +191,13 @@ export async function postInventory(data: NewInventoryInput) {
     return result.rows[0];
 }
 
-export async function postMaterial(dados: TipoMaterial) {
-    const id = dados.id ?? uuidv4();
-    const result = await query(
-        `INSERT INTO "TipoMaterial" (id, tipo, "dataRegistro")
-         VALUES ($1, $2, NOW())
-         RETURNING *`,
-        [id, dados.tipo]
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
-    );
-    return result.rows[0];
-}
-
 export async function getMaterial() {
     const result = await query(
-<<<<<<< HEAD
-        `SELECT id, tipo, quantidade, progresso, status FROM "Material" ORDER BY tipo ASC`
-=======
         `SELECT id, tipo FROM "TipoMaterial" ORDER BY tipo ASC`
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     );
     return result.rows;
 }
 
-<<<<<<< HEAD
-export async function patchInventory() {
-    return
-}
-
-export async function deleteInventory() {
-    return
-=======
 export async function patchInventory(id: string, data: UpdateInventoryInput) {
     const fields: string[] = [];
     const params: any[] = [];
@@ -329,5 +295,4 @@ export async function deleteInventory(id: string) {
         [id]
     );
     return true;
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 }

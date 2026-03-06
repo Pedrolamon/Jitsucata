@@ -8,7 +8,6 @@ import {
   Polyline,
   Popup,
   Circle,
-  Tooltip,
 } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -51,71 +50,11 @@ const CriarRota = () => {
   const [tipoCaminhao, setTipoCaminhao] = useState("3/4");
   const [distanciaTotal, setDistanciaTotal] = useState(0);
   const [custoEstimado, setCustoEstimado] = useState(0);
+  const [loading, setLoading]= useState(true)
 
   const pontosRota = fornecedores.filter((f) => selecionados.includes(f.id));
 
   useEffect(() => {
-<<<<<<< HEAD
-    Promise.all([listarMateriais(), listarFornecedores()]).then(
-      ([mats, forns]) => {
-        console.log("DADOS BRUTOS DO BACKEND:", forns);
-
-        const fornsComCarga = forns.map((f) => {
-          // Pega a lat/lng do fornecedor conforme sua interface
-          const lat = f.latitude;
-          const lng = f.longitude;
-
-          const cargaTotal = mats
-            .filter((m) => m.fornecedorId === f.id && m.status === "pendente")
-            .reduce((acc, curr) => acc + Number(curr.quantidade), 0);
-
-          // Retornamos um novo objeto com a lat/lng "achatada" no primeiro nível
-          return {
-            ...f,
-            latitude: lat,
-            longitude: lng,
-            cargaTotal,
-          };
-        });
-
-        console.log("FORNECEDORES PRONTOS:", fornsComCarga);
-        setFornecedores(fornsComCarga);
-
-        // Se veio do state (de criar zona ou de material-mercado), pré-seleciona os fornecedores
-        if (location.state?.paradas) {
-          const ids = location.state.paradas.map((f: any) => f.id);
-          setSelecionados(ids);
-        } else if (location.state?.focusFornecedor) {
-          // Focar no fornecedor específico
-          const fornecedor = forns.find(
-            (f) => f.id === location.state.focusFornecedor,
-          );
-          if (fornecedor) {
-            // Talvez centralizar o mapa no fornecedor
-            // Por enquanto, apenas log
-            console.log("Focar no fornecedor:", fornecedor);
-          }
-        }
-      },
-    );
-  }, [location.state]);
-
-  useEffect(() => {
-    if (selecionados.length > 1) {
-      const pontos = pontosRota.map((f) => L.latLng(f.latitude, f.longitude));
-      // Calcular rota usando OSRM ou similar, mas para simplicidade, usar distance aproximada
-      let dist = 0;
-      for (let i = 0; i < pontos.length - 1; i++) {
-        dist += pontos[i].distanceTo(pontos[i + 1]);
-      }
-      setDistanciaTotal(dist / 1000); // em km
-      setCustoEstimado((dist / 1000) * custoPorKm);
-    } else {
-      setDistanciaTotal(0);
-      setCustoEstimado(0);
-    }
-  }, [selecionados, custoPorKm, pontosRota]);
-=======
     Promise.all([listarMateriais(), listarFornecedores()]).then(([mats, forns]) => {
       console.log("DADOS BRUTOS DO BACKEND:", forns);
 
@@ -142,7 +81,6 @@ const CriarRota = () => {
       setLoading(false);
     });
   }, []);
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 
   const handleSelecionar = (id: string) => {
     setSelecionados((sel) =>
@@ -180,16 +118,8 @@ const CriarRota = () => {
               <h4 className="text-white font-black uppercase italic text-[15px] tracking-widest flex items-center gap-2 ">
                 <Truck size={16} /> Zonas Disponiveis
               </h4>
-<<<<<<< HEAD
-              <button
-                onClick={() => setExibirZonas(!exibirZonas)}
-                className="!text-[11px] font-black uppercase text-[var(--color-primary)] transition-colors"
-              >
-                {exibirZonas ? "Ocultar Zonas" : "Ver Zonas"}
-=======
               <button onClick={() => setExibirZonas(!exibirZonas)} className="!text-[11px] font-black uppercase text-[var(--color-primary)] transition-colors">
                 {exibirZonas ? 'Ocultar Zonas' : 'Ver Zonas'}
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
               </button>
             </div>
 
@@ -347,66 +277,12 @@ const CriarRota = () => {
               {/* Marcadores dos Fornecedores */}
               {fornecedores.map((f) => {
                 // Validação: Se não for número, não tenta renderizar no mapa
-<<<<<<< HEAD
-                const temCoordenadas =
-                  typeof f.latitude === "number" &&
-                  typeof f.longitude === "number";
-=======
                 const temCoordenadas = typeof f.latitude === 'number' && typeof f.longitude === 'number';
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 
                 if (!temCoordenadas) return null;
 
                 // IMPORTANTE: Adicionamos o 'return' que faltava no seu erro ts(1109)
                 return (
-<<<<<<< HEAD
-                  <Marker
-                    key={f.id}
-                    position={[f.latitude, f.longitude]}
-                    icon={iconFornecedor}
-                  >
-                    <Tooltip
-                      direction="top"
-                      offset={[0, -20]}
-                      permanent={false}
-                      sticky
-                    >
-                      <div className="p-2 bg-white rounded-lg shadow-lg border">
-                        <h4 className="font-bold text-sm text-gray-800">
-                          {f.name || f.nome}
-                        </h4>
-                        <p className="text-xs text-gray-600">
-                          {f.cidade || "Cidade não informada"}
-                        </p>
-                        <p className="text-xs text-orange-600 font-semibold">
-                          {f.cargaTotal} Ton
-                        </p>
-                      </div>
-                    </Tooltip>
-                    <Popup>
-                      <div className="p-2">
-                        <h4 className="font-black text-[var(--color-primary)] uppercase italic leading-none mb-1">
-                          {f.name || f.nome}
-                        </h4>
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-gray-400 uppercase mb-2">
-                          <Package size={12} /> {f.cargaTotal} Toneladas
-                          Pendentes
-                        </div>
-                        <Button
-                          onClick={() => handleSelecionar(f.id)}
-                          className="w-full h-8 text-[9px] font-black uppercase italic"
-                          variant={
-                            selecionados.includes(f.id)
-                              ? "destructive"
-                              : "default"
-                          }
-                        >
-                          {selecionados.includes(f.id)
-                            ? "Remover"
-                            : "Adicionar à Rota"}
-                        </Button>
-                      </div>
-=======
                   <Marker key={f.id} position={[f.latitude, f.longitude]} icon={iconFornecedor}>
                     <Popup>
                       <div className="p-2">
@@ -424,7 +300,6 @@ const CriarRota = () => {
                           {selecionados.includes(f.id) ? 'Remover' : 'Adicionar à Rota'}
                         </Button>
                       </div>
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
                     </Popup>
                   </Marker>
                 );

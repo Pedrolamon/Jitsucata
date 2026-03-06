@@ -4,10 +4,7 @@ import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
 import { listarMetas, salvarMeta, editarMeta, deleteMeta } from '../services/metas';
 import type { Meta } from '../services/metas';
-<<<<<<< HEAD
-=======
 import { ClassificaçãoMateriais } from '../domain/materiais';
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 
 const MetasColeta = () => {
   const [metas, setMetas] = useState<Meta[]>([]);

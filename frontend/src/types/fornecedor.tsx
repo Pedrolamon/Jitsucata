@@ -11,6 +11,8 @@ export interface Fornecedor {
     state?: string;
     cep: string;
     neighborhood: string;
+    latitude?: number;
+    longitude?: number
   }
   EnvironmentalLicense: {
   numero: string;

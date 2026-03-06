@@ -1,32 +1,3 @@
-<<<<<<< HEAD
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  listarFornecedores,
-  excluirFornecedor,
-} from "../../services/fornecedores";
-import type { Fornecedor } from "../../types/fornecedor";
-import {
-  Search,
-  Plus,
-  Trash2,
-  Edit3,
-  Eye,
-  X,
-  MapPin,
-  ShieldCheck,
-  User,
-  Info,
-} from "lucide-react";
-
-const FornecedoresList = () => {
-  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Estado para controlar o Fornecedor selecionado para o "Veja Mais"
-  const [selectedFornecedor, setSelectedFornecedor] =
-    useState<Fornecedor | null>(null);
-=======
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listarFornecedores, excluirFornecedor } from '../../services/fornecedores';
@@ -41,7 +12,6 @@ const FornecedoresList = () => {
 
   // Estado para controlar o Fornecedor selecionado para o "Veja Mais"
   const [selectedFornecedor, setSelectedFornecedor] = useState<Fornecedor | null>(null);
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
 
   const navigate = useNavigate();
 
@@ -49,16 +19,11 @@ const FornecedoresList = () => {
     try {
       const data = await listarFornecedores();
       setFornecedores(data);
-<<<<<<< HEAD
-    } catch (error) {
-      console.error("Erro ao carregar fornecedores", error);
-=======
       setTimeout(() => {
         setLoading(false);
       }, 800);
     } finally {
       setLoading(false);
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
     }
   };
 
@@ -73,20 +38,6 @@ const FornecedoresList = () => {
     }
   };
 
-<<<<<<< HEAD
-  const filteredFornecedores = fornecedores.filter(
-    (f) =>
-      f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      f.cnpj.includes(searchTerm) ||
-      f.address.city.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  return (
-    <div
-      className=" w-full"
-      style={{ backgroundColor: "var(--color-primary)" }}
-    >
-=======
   const filteredFornecedores = fornecedores.filter(f =>
     f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     f.cnpj.includes(searchTerm) ||
@@ -96,7 +47,6 @@ const FornecedoresList = () => {
   return (
     <div className=" w-full" style={{ backgroundColor: 'var(--color-primary)' }}>
 
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
       {/* Cabeçalho */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
@@ -213,10 +163,6 @@ const FornecedoresList = () => {
       {selectedFornecedor && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-<<<<<<< HEAD
-=======
-
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
             {/* Header do Modal */}
             <div className="p-6 border-b flex justify-between items-center bg-gray-50">
               <div>
@@ -237,10 +183,6 @@ const FornecedoresList = () => {
 
             {/* Conteúdo do Modal (Scrollable) */}
             <div className="p-6 overflow-y-auto no-scrollbar grid grid-cols-1 md:grid-cols-2 gap-8">
-<<<<<<< HEAD
-=======
-
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
               {/* Seção 1: Dados Gerais */}
               <div className="space-y-4">
                 <h4 className="flex items-center gap-2 text-[var(--color-primary)] font-bold uppercase text-xs tracking-widest border-b pb-2">
@@ -380,17 +322,8 @@ const FornecedoresList = () => {
             {/* Rodapé do Modal */}
             {selectedFornecedor.observacoes && (
               <div className="p-6 bg-orange-50 border-t border-orange-100">
-<<<<<<< HEAD
-                <p className="text-[10px] uppercase font-black text-orange-800 mb-1">
-                  Observações Internas
-                </p>
-                <p className="text-sm text-orange-900 italic">
-                  {selectedFornecedor.observacoes}
-                </p>
-=======
                 <p className="text-[10px] uppercase font-black text-orange-800 mb-1">Observações Internas</p>
                 <p className="text-sm text-orange-900 italic">{selectedFornecedor.observacoes}</p>
->>>>>>> 67748c1f5223b794bc71d6873e60be11a17a78f2
               </div>
             )}
           </div>
