@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { listarMateriais } from "../services/materiais";
-import { listarFornecedores } from "../services/fornecedores";
-import type { Material } from "../services/materiais";
+import { portalService } from "../services/portal";
 import {
   MapPin,
   Truck,
@@ -22,27 +20,29 @@ const MapaAbastecimento = () => {
   const [filtroVolume, setFiltroVolume] = useState("Todos");
 
   const fetchData = async () => {
-    const [mats, forns] = await Promise.all([
-      listarMateriais(),
-      listarFornecedores(),
-    ]);
-
-    const fornsComMateriais = forns.map((f) => {
-      const materiaisFornecedor = mats.filter(
-        (m) => m.fornecedorId === f.id && m.status === "pendente",
-      );
-      const quantidadeTotal = materiaisFornecedor.reduce(
-        (acc, m) => acc + Number(m.quantidade),
-        0,
-      );
+    const params: any = {};
+    if (filtroRegiao && filtroRegiao !== 'Todas') {
+      // podemos tratar como estado ou cidade
+      params.state = filtroRegiao;
+      params.city = filtroRegiao;
+    }
+    const items = await portalService.materialMercado(params);
+    // API já traz nome do fornecedor e endereço, montar estrutura similar
+    const grouped: Record<string, any[]> = {};
+    items.forEach((m: any) => {
+      const supplierId = m.fornecedorId;
+      if (!grouped[supplierId]) grouped[supplierId] = [];
+      grouped[supplierId].push(m);
+    });
+    const fornecedoresList = Object.values(grouped).map(arr => {
+      const first = arr[0];
       return {
-        ...f,
-        materiais: materiaisFornecedor,
-        quantidadeTotal,
+        ...first,
+        materiais: arr,
+        quantidadeTotal: arr.reduce((acc: number, x: any) => acc + x.quantidade, 0),
       };
     });
-
-    setFornecedores(fornsComMateriais);
+    setFornecedores(fornecedoresList);
   };
 
   useEffect(() => {
@@ -261,7 +261,7 @@ const MapaAbastecimento = () => {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          {f.materiais.slice(0, 3).map((m: Material) => (
+                          {f.materiais.slice(0, 3).map((m: any) => (
                             <div
                               key={m.id}
                               className="flex justify-between items-center text-xs"

@@ -7,11 +7,21 @@ export interface Pagamento {
   material: string;
   valor: number;
   data_pagamento: string;
-  status?: string;
-  metodo_pagamento?: string;
+  metodo_pagamento: 'PIX' | 'TED' | 'Boleto' | 'Dinheiro';
+  status: 'pago' | 'agendado' | 'atrasado' | 'cancelado';
   descricao?: string;
+  numero_documento?: string;
+  comprovante_url?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface ResumoFinanceiro {
+  total_pago: number;
+  total_agendado: number;
+  total_atrasado: number;
+  total_cancelado: number;
+  quantidade_pagamentos: number;
 }
 
 export async function listarPagamentos(): Promise<Pagamento[]> {
@@ -89,6 +99,17 @@ export async function deletarPagamento(id: string): Promise<void> {
     await api.delete(`/pagamentos/${id}`);
   } catch (error) {
     console.error('Erro ao deletar pagamento:', error);
+    throw error;
+  }
+}
+
+// Export para compatibilidade com código existente que importa listarFornecedores daqui
+export async function listarFornecedores() {
+  try {
+    const response = await api.get('/fornecedores');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao listar fornecedores:', error);
     throw error;
   }
 }

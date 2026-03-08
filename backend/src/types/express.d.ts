@@ -1,7 +1,5 @@
-// src/types/express.d.ts
 
 import { Request } from 'express';
-// Não precisa mais importar JwtPayload nem definir DecodedUser separadamente,
 // se você for usar 'any' para o 'user'
 
 declare module 'express' {

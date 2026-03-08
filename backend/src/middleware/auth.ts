@@ -25,4 +25,18 @@ export function authenticateJWT(req: AuthRequest, res: Response, next: NextFunct
   } catch (err) {
     return res.status(401).json({ message: "Token inválido." });
   }
+}
+
+// middleware para verificar perfis permitidos
+export function requireRole(allowed: string | string[]) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.role) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+    const roles = Array.isArray(allowed) ? allowed : [allowed];
+    if (!roles.includes(req.role)) {
+      return res.status(403).json({ message: "Acesso negado." });
+    }
+    next();
+  };
 } 

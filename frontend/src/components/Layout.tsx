@@ -16,7 +16,10 @@ import {
   Grid2x2Check,
   BookMarked,
   BadgeCheck,
-  Handshake
+  Handshake,
+  History,
+  TrendingUp,
+  BarChart3
 } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from "react";
@@ -44,12 +47,16 @@ interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (isOpen: boolean) => void;
   items: SidebarItem[];
+  viewAs?: string;
+  toggleViewAs?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   sidebarOpen,
   setSidebarOpen,
   items,
+  viewAs,
+  toggleViewAs,
 }) => {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -107,7 +114,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </nav>
 
-      <div className=" mt-9 flex p-3 ">
+      <div className=" mt-9 flex flex-col p-3 ">
+        {sidebarOpen && toggleViewAs && (
+          <button
+            onClick={toggleViewAs}
+            className="mb-2 flex items-center justify-center p-2 rounded-xl bg-white/20 text-white text-xs uppercase tracking-wider hover:bg-white/30 transition-colors"
+          >
+            {viewAs === 'admin' ? 'Ver como Fornecedor' : 'Ver como Admin'}
+          </button>
+        )}
         {user?.perfil === 'admin' && (
           <Link to="/admin/alertas" className="relative p-1 hover:text-white/80 transition-colors text-sm font-medium uppercase tracking-wider">
             <Bell className="text-white h-4 w-4 ml-5 " />
@@ -143,7 +158,10 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarWidth = sidebarOpen ? "ml-64" : "ml-20";
 
-  const sidebarItems = [
+  const { user } = useAuth();
+  const [viewAs, setViewAs] = useState<string | undefined>(user?.perfil);
+
+  const commonItems: SidebarItem[] = [
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/fornecedores", label: "Fornecedores", icon: UserPlus },
     { href: "/materialMercado", label: "Material no Mercado ", icon: Handshake },
@@ -154,8 +172,20 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/historico-pagamento", label: "Historico Pagamento", icon: ScrollText },
     { href: "/inventory", label: "Estoque", icon: Box },
     { href: "/tabela-preços", label: "Tabela de Preço", icon: Grid2x2Check },
+    { href: "/precos-avancados", label: "💰 Preços Avançados", icon: BarChart3 },
     { href: "/Classificação", label: "Classificação", icon: BookMarked },
   ];
+
+  const supplierItems: SidebarItem[] = [
+    { href: "/fornecedores/dashboard", label: "Meu Painel", icon: Home },
+    { href: "/fornecedores/precos", label: "Preço (leitura)", icon: Grid2x2Check },
+    { href: "/fornecedores/estoque", label: "Meu Estoque", icon: Box },
+    { href: "/fornecedores/estoque/historico", label: "Histórico Estoque", icon: History },
+    { href: "/fornecedores/fluxo-financeiro", label: "Fluxo de Caixa", icon: CircleDollarSign },
+  ];
+
+  const effectiveRole = viewAs || user?.perfil;
+  const sidebarItems = effectiveRole === 'fornecedor' ? supplierItems : commonItems;
 
   return (
     <div className="flex min-h-screen w-full bg-[var(--color-primary)]">
@@ -164,6 +194,8 @@ export default function Layout({ children }: LayoutProps) {
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
           items={sidebarItems}
+          viewAs={viewAs}
+          toggleViewAs={() => setViewAs(prev => (prev === 'admin' ? 'fornecedor' : 'admin'))}
         />
       </aside>
 

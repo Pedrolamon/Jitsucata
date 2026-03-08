@@ -5,6 +5,11 @@ import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/auth/Login';
 
 import PriceList from './pages/Tabela-preço';
+import SupplierDashboard from './pages/fornecedores/Dashboard';
+import SupplierPrecos from './pages/fornecedores/Precos';
+import SupplierEstoque from './pages/fornecedores/Estoque';
+import SupplierHistorico from './pages/fornecedores/Historico';
+import SupplierCashflow from './pages/fornecedores/Cashflow';
 import PaymentHistory from './pages/payment-history';
 import MaterialClassification from "./pages/material/Classificação"
 import Payments from './pages/pagamentos';
@@ -27,6 +32,8 @@ import Register from './pages/auth/Register';
 import NovoFornecedor from './pages/supplier-pages/novoFornecedor';
 import Aprovar from './pages/Aprovar';
 import EdiçãoFornecedores from './pages/ediçãoFornecedores';
+import PrecosAvancados from './pages/PrecosAvancados';
+//import PrivateRoute from './routes/PrivateRoute';
 
 
 const App = () => {
@@ -117,7 +124,26 @@ const App = () => {
             }
           />
           <Route
-            path="/controle-financeiro"
+            path='/tabela-preços'
+            element={
+              // <PrivateRoute perfil="fornecedor"> inicio de algo
+              <Layout>
+                <PriceList />
+              </Layout>
+              //</PrivateRoute>
+            }
+          />
+          <Route
+            path="/precos-avancados"
+            element={
+              // <PrivateRoute perfil="admin">
+              <Layout>
+                <PrecosAvancados />
+              </Layout>
+              //</PrivateRoute>
+            }
+          />
+          <Route path="/controle-financeiro"
             element={
               // <PrivateRoute perfil="fornecedor"> inicio de algo
               <Layout>
@@ -127,11 +153,51 @@ const App = () => {
             }
           />
           <Route
-            path="/tabela-preços"
+            path="/fornecedores/dashboard"
             element={
-              // <PrivateRoute perfil="fornecedor"> inicio de algo
+              //<PrivateRoute perfil="fornecedor">
               <Layout>
-                <PriceList />
+                <SupplierDashboard />
+              </Layout>
+              //</PrivateRoute>
+            }
+          />
+          <Route
+            path="/fornecedores/precos"
+            element={
+              //<PrivateRoute perfil="fornecedor">
+              <Layout>
+                <SupplierPrecos />
+              </Layout>
+              //</PrivateRoute>
+            }
+          />
+          <Route
+            path="/fornecedores/estoque"
+            element={
+              //<PrivateRoute perfil="fornecedor">
+              <Layout>
+                <SupplierEstoque />
+              </Layout>
+              // </PrivateRoute>
+            }
+          />
+          <Route
+            path="/fornecedores/estoque/historico"
+            element={
+              //<PrivateRoute perfil="fornecedor">
+              <Layout>
+                <SupplierHistorico />
+              </Layout>
+              //</PrivateRoute>
+            }
+          />
+          <Route
+            path="/fornecedores/fluxo-financeiro"
+            element={
+              //<PrivateRoute perfil="fornecedor">
+              <Layout>
+                <SupplierCashflow />
               </Layout>
               //</PrivateRoute>
             }

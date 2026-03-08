@@ -1,7 +1,8 @@
 import { Router, Request, Response } from "express";
 import { Fornecedor } from "../types/express";
-import { createsupplier, getPendingSuppliers, approveSupplier, deleteSupplier, findUserById, getAllActiveSuppliers, updateSupplier } from "../services/Fornecedores-services";
+import { createsupplier, getSupplierPrices, getPendingSuppliers, approveSupplier, deleteSupplier, findUserById, getAllActiveSuppliers, updateSupplier } from "../services/Fornecedores-services";
 import { getCoordsFromCEP } from "../utils/geocoding"
+import { validate as isUuid } from 'uuid';
 
 const router = Router();
 
@@ -12,6 +13,23 @@ router.get('/fornecedores/pendentes', async (req: Request, res: Response) => {
     res.json(suppliers);
   } catch (error) {
     res.status(500).json({ error: "Erro ao buscar fornecedores pendentes" });
+  }
+});
+
+router.get('/fornecedores/precos', async (req: Request, res: Response) => {
+  try {
+    const precos = await getSupplierPrices();
+    res.json(precos);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar preços" });
+  }
+});
+
+router.get('/fornecedores/estoque', async (req: Request, res: Response) => {
+  try {
+    res.json({ mensagem: "Rota de estoque funcionando" });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar estoque" });
   }
 });
 
@@ -44,8 +62,14 @@ router.post('/fornecedores', async (req: Request, res: Response) => {
 
 // 3. EDITAR 
 router.get('/fornecedores/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (!isUuid(id)) {
+    return res.status(400).json({ error: "ID inválido" })
+  };
+
   try {
-    const suppliers = await findUserById(req.params.id);
+    const suppliers = await findUserById(id);
     if (!suppliers) return res.status(404).json({ error: "Fornecedor não encontrado" })
     res.json(suppliers);
   } catch (error) {

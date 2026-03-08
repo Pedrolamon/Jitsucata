@@ -7,10 +7,12 @@ import { connectDB } from "./database";
 import fornecedorRoutes from "./routes/fornecedores";
 import authRoutes from "./routes/auth"
 import priceRoutes from "./routes/prices"
+import advancedPriceRoutes from "./routes/advanced-prices"
 import user from "./routes/user"
 import metas from "./routes/metas"
 import inventory from "./routes/inventory"
 import pagementosRoutes from "./routes/pagemento"
+import fornecedorPortal from "./routes/fornecedorPortal"
 
 const app = express();
 
@@ -27,10 +29,13 @@ app.use(express.json());
 app.use('/api', fornecedorRoutes);
 app.use('/api', authRoutes);
 app.use('/api', priceRoutes)
+app.use('/api', advancedPriceRoutes)
 app.use("/api", user)
 app.use("/api", metas)
 app.use("/api", inventory)
 app.use("/api", pagementosRoutes)
+// rotas do portal do fornecedor (JWT deve estar presente)
+app.use("/api", fornecedorPortal)
 const PORT = 3333;
 
 app.get('/', (req, res) => res.send('API Jitsucata Online!'));

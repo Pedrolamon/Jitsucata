@@ -147,6 +147,35 @@ export async function postInventory(data: NewInventoryInput) {
     const id = uuidv4();
     const status = data.status ?? "disponivel";
 
+    // antes de inserir, atualizar tabela de resumo se fornecedor informado
+    if (data.fornecedorId && data.preco) {
+        // calcula preço médio
+        const ex = await query(
+            `SELECT quantidade, preco_medio FROM "EstoqueFornecedores" WHERE "fornecedorId"=$1 AND tipo=$2`,
+            [data.fornecedorId, data.tipo]
+        );
+        let novoPreco = data.preco;
+        let novaQtd = data.quantidade;
+        if (ex.rows.length) {
+            const { quantidade: qtd, preco_medio } = ex.rows[0];
+            const valorAtual = parseFloat(qtd) * parseFloat(preco_medio);
+            const valorEntrada = data.quantidade * data.preco;
+            novaQtd = parseFloat(qtd) + data.quantidade;
+            novoPreco = novaQtd > 0 ? (valorAtual + valorEntrada) / novaQtd : data.preco;
+            await query(
+                `UPDATE "EstoqueFornecedores" SET quantidade=$1, preco_medio=$2, "updatedAt"=NOW()
+           WHERE "fornecedorId"=$3 AND tipo=$4`,
+                [novaQtd, novoPreco, data.fornecedorId, data.tipo]
+            );
+        } else {
+            await query(
+                `INSERT INTO "EstoqueFornecedores" (id, "fornecedorId", tipo, quantidade, preco_medio)
+           VALUES ($1,$2,$3,$4,$5)`,
+                [uuidv4(), data.fornecedorId, data.tipo, data.quantidade, data.preco]
+            );
+        }
+    }
+
     const result = await query(
         `INSERT INTO "Materiais"
          (id, "fornecedorId", tipo, quantidade, unidade, observacoes, status, "dataRegistro",
