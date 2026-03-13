@@ -1,15 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
-import {
-    Plus,
-    Save,
-    X,
-    TrendingUp,
-    Download,
-    Eye,
-    Check,
-    Search,
-} from "lucide-react";
+import { Plus, Save, X, TrendingUp, Download, Eye, Check, Search, ChevronDown, Trash } from "lucide-react";
 import { cn } from "../lib/utils";
+import { ClassificaçãoMateriais, ClassificaçãoMateriaisNãoferrosos } from "../domain/materiais";
 import type {
     TabelaPrecosAvancada,
     ClassificacaoMaterial,
@@ -28,6 +20,9 @@ export default function PrecosAvancados() {
     // Estados de UI
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<"tabela" | "criar" | "historico" | "relatorio">("tabela");
+    const [mostrarListaClassificacoes, setMostrarListaClassificacoes] = useState(false);
+    const [mostrarListaEstados, setMostrarListaEstados] = useState(false);
+    const [searchClassificacao, setSearchClassificacao] = useState("");
 
     // Filtros
     const [filtroClassificacao, setFiltroClassificacao] = useState<string>("");
@@ -39,7 +34,6 @@ export default function PrecosAvancados() {
     const [formData, setFormData] = useState({
         classificacao_id: "",
         estado_id: "",
-        preco_base: 0,
         data_inicio: new Date().toISOString().split("T")[0],
         data_fim: "",
         observacoes: "",
@@ -114,21 +108,90 @@ export default function PrecosAvancados() {
         return filtered;
     }, [precos, filtroClassificacao, filtroEstado, filtroStatus, searchText]);
 
+    // Combina listas locais (domain) com as classificações vindas da API
+    const combinedClassificacoes = useMemo(() => {
+        const fromDomain = (ClassificaçãoMateriais || []).map((d: any) => ({
+            id: d.Titulo,
+            nome: d.Titulo,
+            descricao: d.Descrição || d.Descricao || "",
+            source: "domain",
+        }));
+
+        const fromDomainNaoFerro = (ClassificaçãoMateriaisNãoferrosos || []).map((d: any) => ({
+            id: d.Titulo,
+            nome: d.Titulo,
+            descricao: d.Descrição || d.Descricao || "",
+            source: "domain",
+        }));
+
+        const fromApi = (classificacoes || []).map((c: any) => ({
+            id: c.id,
+            nome: c.nome,
+            descricao: c.descricao || c.descricao || "",
+            source: "api",
+        }));
+
+        // Agrupa, removendo duplicatas por nome (mantém os da API se houver conflito)
+        const map = new Map<string, any>();
+        [...fromDomain, ...fromDomainNaoFerro].forEach((it) => map.set(it.nome, it));
+        fromApi.forEach((it) => map.set(it.nome, it));
+
+        return Array.from(map.values());
+    }, [classificacoes]);
+
+    // Lista estática de estados do Brasil (id = sigla)
+    const estadosBrasil = useMemo(() => [
+        { id: "AC", sigla: "AC", nome: "Acre" },
+        { id: "AL", sigla: "AL", nome: "Alagoas" },
+        { id: "AP", sigla: "AP", nome: "Amapá" },
+        { id: "AM", sigla: "AM", nome: "Amazonas" },
+        { id: "BA", sigla: "BA", nome: "Bahia" },
+        { id: "CE", sigla: "CE", nome: "Ceará" },
+        { id: "DF", sigla: "DF", nome: "Distrito Federal" },
+        { id: "ES", sigla: "ES", nome: "Espírito Santo" },
+        { id: "GO", sigla: "GO", nome: "Goiás" },
+        { id: "MA", sigla: "MA", nome: "Maranhão" },
+        { id: "MT", sigla: "MT", nome: "Mato Grosso" },
+        { id: "MS", sigla: "MS", nome: "Mato Grosso do Sul" },
+        { id: "MG", sigla: "MG", nome: "Minas Gerais" },
+        { id: "PA", sigla: "PA", nome: "Pará" },
+        { id: "PB", sigla: "PB", nome: "Paraíba" },
+        { id: "PR", sigla: "PR", nome: "Paraná" },
+        { id: "PE", sigla: "PE", nome: "Pernambuco" },
+        { id: "PI", sigla: "PI", nome: "Piauí" },
+        { id: "RJ", sigla: "RJ", nome: "Rio de Janeiro" },
+        { id: "RN", sigla: "RN", nome: "Rio Grande do Norte" },
+        { id: "RS", sigla: "RS", nome: "Rio Grande do Sul" },
+        { id: "RO", sigla: "RO", nome: "Rondônia" },
+        { id: "RR", sigla: "RR", nome: "Roraima" },
+        { id: "SC", sigla: "SC", nome: "Santa Catarina" },
+        { id: "SP", sigla: "SP", nome: "São Paulo" },
+        { id: "SE", sigla: "SE", nome: "Sergipe" },
+        { id: "TO", sigla: "TO", nome: "Tocantins" },
+    ], []);
+
+    const estadosLista = estadosBrasil; // atualmente usamos a lista local fixa
+
     // Contar pendentes para aprovação
     const pendentesAcao = precos.filter((p) => p.status === "pendente_aprovacao").length;
 
     // Funções de ação
     const handleCriarPreco = async () => {
         try {
-            if (!formData.classificacao_id || formData.preco_base <= 0) {
-                alert("Preencha os campos obrigatórios");
+            if (!formData.classificacao_id || faixasPreco.length === 0) {
+                alert("Preencha os campos obrigatórios: classificação e ao menos uma faixa de preço");
                 return;
             }
+
+            // Calcular preco_base como a primeira faixa de preço
+            const precoBase = faixasPreco.length > 0 ? faixasPreco[0].preco : 0;
 
             // Preparar dados completos com faixas e variações
             const dadosCompletos = {
                 ...formData,
+                preco_base: precoBase, // Adicionar preco_base
                 faixas: faixasPreco.map(f => ({
+                    id: f.id, // Incluir o id da faixa para correlação
                     peso_minimo: f.peso_minimo,
                     peso_maximo: f.peso_maximo ?? undefined,
                     percentual_desconto: 0, // será ajustado se necessário
@@ -192,11 +255,22 @@ export default function PrecosAvancados() {
         }
     };
 
+    const handleDeletarPreco = async (id: string) => {
+        if (!confirm("Tem certeza que deseja apagar este preço? Esta ação não pode ser desfeita.")) return;
+        try {
+            await advancedPricesService.deleteTabelaPrecos(id);
+            setPrecos((prev) => prev.filter((p) => p.id !== id));
+            alert("Preço removido com sucesso.");
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao remover preço. Tente novamente.");
+        }
+    };
+
     const resetForm = () => {
         setFormData({
             classificacao_id: "",
             estado_id: "",
-            preco_base: 0,
             data_inicio: new Date().toISOString().split("T")[0],
             data_fim: "",
             observacoes: "",
@@ -213,7 +287,7 @@ export default function PrecosAvancados() {
                 id: Date.now().toString(),
                 peso_minimo: 0,
                 peso_maximo: null,
-                preco: formData.preco_base || 0,
+                preco: 0,
             }
         ]);
     };
@@ -230,7 +304,6 @@ export default function PrecosAvancados() {
 
     // Funções para Variações de Pagamento
     const addVariacaoPagamento = () => {
-        const precoComVariacao = formData.preco_base * 1.02; // 2% padrão
         setVariacoesPagamento([
             ...variacoesPagamento,
             {
@@ -238,7 +311,7 @@ export default function PrecosAvancados() {
                 condicao_nome: "Prazo Customizado",
                 dias_prazo: 30,
                 percentual_variacao: 0,
-                preco_variado: precoComVariacao,
+                preco_variado: 0, // será atualizado quando mudar o percentual
             }
         ]);
     };
@@ -247,9 +320,12 @@ export default function PrecosAvancados() {
         setVariacoesPagamento(variacoesPagamento.map(v => {
             if (v.id === id) {
                 const updated = { ...v, [field]: value };
-                // Se mudar percentual, recalcular preço
+                // Se mudar percentual, recalcular preço para TODAS as faixas
                 if (field === "percentual_variacao") {
-                    updated.preco_variado = formData.preco_base * (1 + (updated.percentual_variacao / 100));
+                    // O preco_variado aqui é apenas um preço de referência
+                    // O sistema aplicará a variação a cada faixa individualmente
+                    const basePrice = faixasPreco.length > 0 ? faixasPreco[0].preco : 0;
+                    updated.preco_variado = basePrice * (1 + (updated.percentual_variacao / 100));
                 }
                 return updated;
             }
@@ -268,708 +344,808 @@ export default function PrecosAvancados() {
     // Componente de status badge
     const StatusBadge = ({ status }: { status: string }) => {
         const styles = {
-            ativo: "bg-green-100 text-green-800",
-            pendente_aprovacao: "bg-yellow-100 text-yellow-800",
-            inativo: "bg-gray-100 text-gray-800",
-            expirado: "bg-red-100 text-red-800",
+            ativo: "bg-green-500/20 text-green-300 border border-green-500/50 font-semibold",
+            pendente_aprovacao: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/50 font-semibold",
+            inativo: "bg-slate-600/30 text-slate-300 border border-slate-600/50 font-semibold",
+            expirado: "bg-red-500/20 text-red-300 border border-red-500/50 font-semibold",
+        };
+
+        const labels = {
+            ativo: "✓ Ativo",
+            pendente_aprovacao: "⏳ Pendente",
+            inativo: "∅ Inativo",
+            expirado: "✕ Expirado",
         };
 
         return (
-            <span className={cn("px-2 py-1 rounded-full text-xs font-semibold", styles[status as keyof typeof styles])}>
-                {status}
+            <span className={cn("px-3 py-1 rounded-full text-xs font-semibold", styles[status as keyof typeof styles])}>
+                {labels[status as keyof typeof labels]}
             </span>
         );
     };
 
+    // Formata datas para dd/mm/aaaa
+    const formatarDataBR = (data: string | undefined | null) => {
+        if (!data) return "-";
+
+        const dataISO = String(data).split("T")[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dataISO)) {
+            const [ano, mes, dia] = dataISO.split("-");
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        const parsed = new Date(String(data));
+        if (Number.isNaN(parsed.getTime())) return "-";
+
+        return parsed.toLocaleDateString("pt-BR");
+    };
+
     if (loading) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
-                    <p className="text-gray-600">Carregando sistema de preços...</p>
+            <div className="w-full h-screen flex items-center justify-center bg-[var(--color-bg)]">
+                <div className="text-center space-y-4">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-[var(--color-border)] border-t-[var(--color-primary)] mx-auto"></div>
+                    <p className="text-[var(--color-text)] text-lg font-medium">Carregando sistema de preços...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="w-full space-y-6 p-6 max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">
-                        💰 Sistema de Preços Avançado
-                    </h2>
-                    <p className="text-white/70 text-sm font-medium uppercase tracking-widest">
-                        Gestão de Valores por Estado, Classificação e Volume
-                    </p>
-                </div>
-                {pendentesAcao > 0 && (
-                    <div className="bg-yellow-500/20 border border-yellow-500 rounded-lg px-4 py-3">
-                        <p className="text-yellow-300 font-bold">
-                            ⚠️ {pendentesAcao} preço(s) aguardando aprovação
+        <div className="min-h-screen w-full bg-[var(--color-bg)]">
+            <div className="w-full space-y-6 p-4 md:p-8 max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start md:items-center">
+                    <div className="space-y-2">
+                        <h2 className="text-2xl md:text-4xl font-black text-[var(--color-text)] uppercase italic tracking-tighter">
+                            💰 Sistema de Preços Avançado
+                        </h2>
+                        <p className="text-[var(--color-primary)] text-sm font-medium uppercase tracking-widest">
+                            Gestão de Valores por Estado, Classificação e Volume
                         </p>
                     </div>
-                )}
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-2 border-b border-white/10">
-                {[
-                    { id: "tabela", label: "📊 Tabela", icon: "table" },
-                    { id: "criar", label: "➕ Criar", icon: "plus" },
-                    { id: "historico", label: "📈 Histórico", icon: "history" },
-                    { id: "relatorio", label: "📉 Relatório", icon: "chart" },
-                ].map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={cn(
-                            "px-4 py-2 font-bold uppercase text-xs transition-all",
-                            activeTab === tab.id
-                                ? "text-orange-500 border-b-2 border-orange-500"
-                                : "text-white/50 hover:text-white/70"
-                        )}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* ABA: TABELA */}
-            {activeTab === "tabela" && (
-                <div className="space-y-4">
-                    {/* Filtros */}
-                    <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 space-y-4">
-                        <h3 className="text-white font-bold flex items-center gap-2">
-                            <Search size={18} /> Filtros e Busca
-                        </h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                            <input
-                                type="text"
-                                placeholder="🔍 Buscar por nome..."
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/50 focus:outline-none focus:border-orange-500"
-                            />
-
-                            <select
-                                value={filtroClassificacao}
-                                onChange={(e) => setFiltroClassificacao(e.target.value)}
-                                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 cursor-pointer"
-                            >
-                                <option value="">Todas as Classificações</option>
-                                {classificacoes.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.nome}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <select
-                                value={filtroEstado}
-                                onChange={(e) => setFiltroEstado(e.target.value)}
-                                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 cursor-pointer"
-                            >
-                                <option value="">Todos os Estados</option>
-                                {estados.map((e) => (
-                                    <option key={e.id} value={e.id}>
-                                        {e.sigla} - {e.nome}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <select
-                                value={filtroStatus}
-                                onChange={(e) => setFiltroStatus(e.target.value)}
-                                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 cursor-pointer"
-                            >
-                                <option value="">Todos os Status</option>
-                                <option value="ativo">Ativo</option>
-                                <option value="pendente_aprovacao">Pendente de Aprovação</option>
-                                <option value="inativo">Inativo</option>
-                                <option value="expirado">Expirado</option>
-                            </select>
-
-                            <button
-                                onClick={handleExportarCSV}
-                                className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-3 py-2 text-white font-bold flex items-center justify-center gap-2 transition-all"
-                            >
-                                <Download size={16} /> Exportar
-                            </button>
+                    {pendentesAcao > 0 && (
+                        <div className="bg-gradient-to-r from-yellow-500/30 to-yellow-600/20 border-l-4 border-yellow-500 rounded-lg px-4 py-3 md:col-span-1 col-span-1">
+                            <p className="text-yellow-200 font-bold text-sm md:text-base">
+                                ⚠️ {pendentesAcao} preço(s) aguardando aprovação
+                            </p>
                         </div>
-                    </div>
-
-                    {/* Tabela */}
-                    <div className="overflow-x-auto bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-                        <table className="w-full text-white text-sm">
-                            <thead>
-                                <tr className="border-b border-white/10 bg-white/5">
-                                    <th className="px-4 py-3 text-left font-bold uppercase text-xs text-orange-400">
-                                        Classificação
-                                    </th>
-                                    <th className="px-4 py-3 text-left font-bold uppercase text-xs text-orange-400">
-                                        Estado
-                                    </th>
-                                    <th className="px-4 py-3 text-right font-bold uppercase text-xs text-orange-400">
-                                        Preço Base (R$)
-                                    </th>
-                                    <th className="px-4 py-3 text-left font-bold uppercase text-xs text-orange-400">
-                                        Vigência
-                                    </th>
-                                    <th className="px-4 py-3 text-left font-bold uppercase text-xs text-orange-400">
-                                        Status
-                                    </th>
-                                    <th className="px-4 py-3 text-center font-bold uppercase text-xs text-orange-400">
-                                        Ações
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {precosFiltrados.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="px-4 py-8 text-center text-white/50">
-                                            Nenhum preço encontrado
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    precosFiltrados.map((preco) => (
-                                        <tr key={preco.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                            <td className="px-4 py-3 font-semibold">{preco.classificacao?.nome}</td>
-                                            <td className="px-4 py-3">
-                                                {preco.estado?.sigla ? `${preco.estado.sigla} - ${preco.estado.nome}` : "Nacional"}
-                                            </td>
-                                            <td className="px-4 py-3 text-right font-bold text-green-400">
-                                                {advancedPricesService.formatarMoeda(preco.preco_base)}
-                                            </td>
-                                            <td className="px-4 py-3 text-xs">
-                                                <div>De: {preco.data_inicio}</div>
-                                                {preco.data_fim && <div>Até: {preco.data_fim}</div>}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <StatusBadge status={preco.status} />
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex gap-2 justify-center">
-                                                    {preco.status === "pendente_aprovacao" && (
-                                                        <button
-                                                            onClick={() => handleAprovarPreco(preco.id)}
-                                                            className="p-1 bg-green-500/20 text-green-400 hover:bg-green-500/40 rounded transition-colors"
-                                                            title="Aprovar"
-                                                        >
-                                                            <Check size={16} />
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => handleVisualizarHistorico(preco.classificacao_id)}
-                                                        className="p-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 rounded transition-colors"
-                                                        title="Histórico"
-                                                    >
-                                                        <Eye size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleGerarRelatorio(preco.classificacao_id)}
-                                                        className="p-1 bg-purple-500/20 text-purple-400 hover:bg-purple-500/40 rounded transition-colors"
-                                                        title="Relatório"
-                                                    >
-                                                        <TrendingUp size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    )}
                 </div>
-            )}
 
-            {/* ABA: CRIAR */}
-            {activeTab === "criar" && (
-                <div className="bg-gradient-to-br from-slate-800/70 to-slate-900/70 backdrop-blur-md p-8 rounded-2xl border border-orange-500/20 shadow-2xl max-w-3xl">
-                    <div className="mb-6 pb-6 border-b border-white/10">
-                        <h3 className="text-white font-black text-2xl flex items-center gap-3">
-                            <div className="bg-orange-500/20 p-2 rounded-lg">
-                                <Plus size={24} className="text-orange-400" />
-                            </div>
-                            Criar Nova Tabela de Preços
-                        </h3>
-                        <p className="text-white/60 text-sm mt-2">
-                            Configure um novo preço para gestão por estado, classificação e volume
-                        </p>
-                    </div>
+                {/* Tabs com melhor visual */}
+                <div className="flex flex-wrap space-between gap-2 bg-[var(--color-surface)]/10 p-1 rounded-lg border border-[var(--color-border)] backdrop-blur-sm">
+                    {[
+                        { id: "tabela", label: "📊 Tabela", icon: "table" },
+                        { id: "criar", label: "➕ Criar", icon: "plus" },
+                        { id: "historico", label: "📈 Histórico", icon: "history" },
+                        { id: "relatorio", label: "📉 Relatório", icon: "chart" },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={cn(
+                                "flex-1 px-3 md:px-4 py-2 font-bold uppercase text-xs md:text-sm transition-all duration-200 justify-center rounded-lg ",
+                                activeTab === tab.id
+                                    ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/50"
+                                    : "text-slate-500 hover:text-white hover:bg-slate-600/40"
+                            )}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
 
-                    <div className="space-y-5">
-                        {/* Classificação com descrição */}
-                        <div className="group">
-                            <label className="block text-white/90 font-semibold text-sm mb-3 flex items-center gap-2">
-                                <span className="w-5 h-5 bg-orange-500/20 rounded text-center text-xs font-bold text-orange-400 flex items-center justify-center">1</span>
-                                Classificação do Material *
-                            </label>
-                            <div className="relative">
+                {/* ABA: TABELA */}
+                {activeTab === "tabela" && (
+                    <div className="space-y-4">
+                        {/* Filtros */}
+                        <div className="bg-gradient-to-br from-slate-700/40 to-slate-800/40 backdrop-blur-md p-4 md:p-6 rounded-xl border border-slate-600/50 space-y-4 shadow-lg">
+                            <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                                <Search size={20} className="text-orange-400" /> Filtros e Busca
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                <input
+                                    type="text"
+                                    placeholder="🔍 Buscar por nome..."
+                                    value={searchText}
+                                    onChange={(e) => setSearchText(e.target.value)}
+                                    className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 md:py-3 text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition-all"
+                                />
+
                                 <select
-                                    value={formData.classificacao_id}
-                                    onChange={(e) => setFormData({ ...formData, classificacao_id: e.target.value })}
-                                    className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-orange-400/50 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-orange-500/80 focus:ring-2 focus:ring-orange-500/30 cursor-pointer transition-all duration-200 appearance-none font-medium"
+                                    value={filtroClassificacao}
+                                    onChange={(e) => setFiltroClassificacao(e.target.value)}
+                                    className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 md:py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 cursor-pointer transition-all appearance-none"
                                 >
-                                    <option value="">📦 Selecione um material...</option>
+                                    <option value="">Todas as Classificações</option>
                                     {classificacoes.map((c) => (
                                         <option key={c.id} value={c.id}>
                                             {c.nome}
                                         </option>
                                     ))}
                                 </select>
-                                <div className="pointer-events-none absolute right-4 top-1/2 transform -translate-y-1/2 text-orange-400/60 group-hover:text-orange-400">
-                                    <svg className="h-5 w-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                                    </svg>
-                                </div>
-                            </div>
-                            {formData.classificacao_id && classificacoes.find(c => c.id === formData.classificacao_id) && (
-                                <div className="mt-3 p-4 bg-gradient-to-r from-orange-500/10 to-orange-500/5 border border-orange-500/30 rounded-lg animate-in fade-in slide-in-from-top-2">
-                                    <p className="text-orange-300 text-xs font-bold mb-2 uppercase tracking-wider">✓ Material Selecionado</p>
-                                    <p className="text-white font-bold text-lg">{classificacoes.find(c => c.id === formData.classificacao_id)?.nome}</p>
-                                    {classificacoes.find(c => c.id === formData.classificacao_id)?.descricao && (
-                                        <p className="text-white/70 text-sm mt-3 leading-relaxed">{classificacoes.find(c => c.id === formData.classificacao_id)?.descricao}</p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
 
-                        {/* Estado com melhor visual */}
-                        <div className="group">
-                            <label className="block text-white/90 font-semibold text-sm mb-3 flex items-center gap-2">
-                                <span className="w-5 h-5 bg-orange-500/20 rounded text-center text-xs font-bold text-orange-400 flex items-center justify-center">2</span>
-                                Estado (Deixe em branco para Nacional)
-                            </label>
-                            <div className="relative">
                                 <select
-                                    value={formData.estado_id}
-                                    onChange={(e) => setFormData({ ...formData, estado_id: e.target.value })}
-                                    className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-orange-400/50 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-orange-500/80 focus:ring-2 focus:ring-orange-500/30 cursor-pointer transition-all duration-200 appearance-none font-medium"
+                                    value={filtroEstado}
+                                    onChange={(e) => setFiltroEstado(e.target.value)}
+                                    className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 md:py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 cursor-pointer transition-all appearance-none"
                                 >
-                                    <option value="">🇧🇷 Nacional (Todos os estados)</option>
-                                    {estados.map((e) => (
+                                    <option value="">Todos os Estados</option>
+                                    {estadosLista.map((e) => (
                                         <option key={e.id} value={e.id}>
                                             {e.sigla} - {e.nome}
                                         </option>
                                     ))}
                                 </select>
-                                <div className="pointer-events-none absolute right-4 top-1/2 transform -translate-y-1/2 text-orange-400/60 group-hover:text-orange-400">
-                                    <svg className="h-5 w-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                                    </svg>
-                                </div>
+
+                                <select
+                                    value={filtroStatus}
+                                    onChange={(e) => setFiltroStatus(e.target.value)}
+                                    className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 md:py-3 text-white focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 cursor-pointer transition-all appearance-none"
+                                >
+                                    <option value="">Todos os Status</option>
+                                    <option value="ativo">Ativo</option>
+                                    <option value="pendente_aprovacao">Pendente de Aprovação</option>
+                                    <option value="inativo">Inativo</option>
+                                    <option value="expirado">Expirado</option>
+                                </select>
+
+                                <button
+                                    onClick={handleExportarCSV}
+                                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 border border-blue-500/50 rounded-lg px-3 py-2 md:py-3 text-white font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/30"
+                                >
+                                    <Download size={16} /> Exportar
+                                </button>
                             </div>
-                            {formData.estado_id && estados.find(e => e.id === formData.estado_id) && (
-                                <div className="mt-3 text-sm text-amber-300/90 flex items-center gap-2">
-                                    <span>📍</span>
-                                    <span>{estados.find(e => e.id === formData.estado_id)?.sigla} - {estados.find(e => e.id === formData.estado_id)?.nome}</span>
-                                </div>
-                            )}
                         </div>
 
-                        {/* Preço Base e Data Início em grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {/* Tabela */}
+                        <div className="bg-gradient-to-br from-slate-700/30 to-slate-800/30 backdrop-blur-md rounded-xl border border-slate-600/50 shadow-lg overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-slate-100 text-sm">
+                                    <thead>
+                                        <tr className="bg-gradient-to-r from-slate-700/60 to-slate-800/60 border-b border-slate-600/50">
+                                            <th className="px-4 py-4 text-left font-bold uppercase text-xs text-orange-400">
+                                                Classificação
+                                            </th>
+                                            <th className="px-4 py-4 text-left font-bold uppercase text-xs text-orange-400">
+                                                Estado
+                                            </th>
+                                            <th className="px-4 py-4 text-right font-bold uppercase text-xs text-orange-400">
+                                                Preço (R$)
+                                            </th>
+                                            <th className="px-4 py-4 text-left font-bold uppercase text-xs text-orange-400">
+                                                Vigência
+                                            </th>
+                                            <th className="px-4 py-4 text-left font-bold uppercase text-xs text-orange-400">
+                                                Status
+                                            </th>
+                                            <th className="px-4 py-4 text-center font-bold uppercase text-xs text-orange-400">
+                                                Ações
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {precosFiltrados.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                                                    Nenhum preço encontrado
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            precosFiltrados.map((preco) => (
+                                                <tr key={preco.id} className="border-b border-slate-600/30 hover:bg-slate-700/40 transition-colors">
+                                                    <td className="px-4 py-4 font-semibold text-orange-300">{preco.classificacao?.nome}</td>
+                                                    <td className="px-4 py-4 text-slate-100">
+                                                        {preco.estado?.sigla ? `${preco.estado.sigla} - ${preco.estado.nome}` : "Nacional"}
+                                                    </td>
+                                                    <td className="px-4 py-4 text-right font-bold text-green-400">
+                                                        {preco.faixas && preco.faixas.length > 0 ? advancedPricesService.formatarMoeda(Math.min(...preco.faixas.map((f: any) => f.preco))) : "-"}
+                                                    </td>
+                                                    <td className="px-4 py-4 text-xs text-slate-300">
+                                                        <div>De: {formatarDataBR(preco.data_inicio)}</div>
+                                                        {preco.data_fim && <div>Até: {formatarDataBR(preco.data_fim)}</div>}
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <StatusBadge status={preco.status} />
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="flex gap-2 justify-center">
+                                                            {preco.status === "pendente_aprovacao" && (
+                                                                <button
+                                                                    onClick={() => handleAprovarPreco(preco.id)}
+                                                                    className="h-10 w-10 flex items-center justify-center p-2 bg-green-500/10 border border-green-500/30 text-green-300 hover:bg-green-500/20 hover:text-green-200 rounded-lg transition-all shadow-sm"
+                                                                    title="Aprovar"
+                                                                >
+                                                                    <Check size={18} />
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleDeletarPreco(preco.id)}
+                                                                className="h-10 w-10 flex items-center justify-center p-2 bg-slate-800/40 border border-slate-700/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-all shadow-sm"
+                                                                title="Excluir"
+                                                            >
+                                                                <Trash size={18} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleVisualizarHistorico(preco.classificacao_id)}
+                                                                className="h-10 w-10 flex items-center justify-center p-2 bg-slate-800/40 border border-slate-700/50 text-blue-300 hover:bg-blue-500/20 hover:text-blue-200 rounded-lg transition-all shadow-sm"
+                                                                title="Histórico"
+                                                            >
+                                                                <Eye size={18} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleGerarRelatorio(preco.classificacao_id)}
+                                                                className="h-10 w-10 flex items-center justify-center p-2 bg-slate-800/40 border border-slate-700/50 text-purple-300 hover:bg-purple-500/20 hover:text-purple-200 rounded-lg transition-all shadow-sm"
+                                                                title="Relatório"
+                                                            >
+                                                                <TrendingUp size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ABA: CRIAR */}
+                {activeTab === "criar" && (
+                    <div className="bg-white/5 backdrop-blur-md p-8 md:p-10 rounded-[2.5rem] border border-white/10 shadow-xl">
+                        <div className="mb-8 pb-8 border-b border-slate-600/50">
+                            <h3 className="text-white font-black text-2xl md:text-3xl flex items-center gap-3 mb-2">
+                                <div className="bg-orange-500/20 p-3 rounded-lg">
+                                    <Plus size={28} className="text-orange-400" />
+                                </div>
+                                Criar Nova Tabela de Preços
+                            </h3>
+                            <p className="text-slate-300 text-sm">
+                                Configure um novo preço para gestão por estado, classificação e volume
+                            </p>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Classificação */}
                             <div className="group">
-                                <label className="block text-white/90 font-semibold text-sm mb-3 flex items-center gap-2">
-                                    <span className="w-5 h-5 bg-orange-500/20 rounded text-center text-xs font-bold text-orange-400 flex items-center justify-center">3</span>
-                                    Preço Base (R$/kg) *
+                                <label className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                                    <span className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded text-center text-xs font-bold text-white flex items-center justify-center">1</span>
+                                    Classificação do Material <span className="text-red-400">*</span>
                                 </label>
                                 <div className="relative">
                                     <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={formData.preco_base}
-                                        onChange={(e) => setFormData({ ...formData, preco_base: parseFloat(e.target.value) })}
-                                        className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-green-400/50 rounded-xl px-5 py-3 text-white placeholder-white/40 focus:outline-none focus:border-green-500/80 focus:ring-2 focus:ring-green-500/30 transition-all duration-200 font-medium"
-                                        placeholder="0.00"
+                                        type="text"
+                                        value={searchClassificacao || (formData.classificacao_id ? (combinedClassificacoes.find((c: any) => c.id === formData.classificacao_id)?.nome || '') : '')}
+                                        onChange={(e) => {
+                                            setSearchClassificacao(e.target.value);
+                                            setMostrarListaClassificacoes(true);
+                                        }}
+                                        onFocus={() => setMostrarListaClassificacoes(true)}
+                                        placeholder="📦 Selecione um material..."
+                                        className="w-full px-4 py-3 bg-[var(--color-bg)] border border-orange-600 rounded-2xl text-slate-700 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 transition-all duration-200 font-medium"
                                     />
-                                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/50 font-bold">R$</span>
+
+                                    {mostrarListaClassificacoes && (
+                                        <div className="absolute z-20 mt-2 w-full max-h-72 overflow-auto bg-[var(--color-bg)] border border-orange-600 rounded-2xl shadow-xl p-2 backdrop-blur-md">
+                                            <div className="flex flex-col gap-2">
+                                                {combinedClassificacoes.filter(c => c.nome.toLowerCase().includes((searchClassificacao || '').toLowerCase())).length > 0 ? (
+                                                    combinedClassificacoes.filter(c => c.nome.toLowerCase().includes((searchClassificacao || '').toLowerCase())).map((c) => (
+                                                        <button
+                                                            key={c.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setFormData((prev) => ({ ...prev, classificacao_id: c.id }));
+                                                                setMostrarListaClassificacoes(false);
+                                                                setSearchClassificacao(c.nome);
+                                                            }}
+                                                            className={cn(
+                                                                "w-full text-left px-4 py-3 text-sm font-medium transition-colors rounded-lg border hover:bg-orange-600/5",
+                                                                formData.classificacao_id === c.id
+                                                                    ? "border-orange-600 text-orange-300 bg-[var(--color-bg)]"
+                                                                    : "border-orange-600 text-slate-700 bg-[var(--color-bg)]"
+                                                            )}
+                                                        >
+                                                            {c.nome}
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-4 py-3 text-slate-400 text-sm">
+                                                        Nenhuma classificação encontrada.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                {formData.classificacao_id && combinedClassificacoes.find((c: any) => c.id === formData.classificacao_id) && (
+                                    (() => {
+                                        const sel = combinedClassificacoes.find((c: any) => c.id === formData.classificacao_id);
+                                        return (
+                                            <div className="mt-3 p-4 bg-gradient-to-r from-orange-500/15 to-orange-500/5 border border-orange-500/30 rounded-lg animate-in fade-in slide-in-from-top-2">
+                                                <p className="text-orange-300 text-xs font-bold mb-2 uppercase tracking-wider">✓ Material Selecionado</p>
+                                                <p className="text-white font-bold text-lg">{sel?.nome}</p>
+                                                {sel?.descricao && (
+                                                    <p className="text-slate-300 text-sm mt-3 leading-relaxed">{sel?.descricao}</p>
+                                                )}
+                                            </div>
+                                        );
+                                    })()
+                                )}
+                            </div>
+
+                            {/* Estado */}
+                            <div className="group">
+                                <label className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                                    <span className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded text-center text-xs font-bold text-white flex items-center justify-center">2</span>
+                                    Estado (Deixe em branco para Nacional)
+                                </label>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMostrarListaEstados((prev) => !prev)}
+                                        className="w-full flex items-center justify-between px-4 py-3 bg-[var(--color-bg)] border border-orange-600 rounded-2xl text-slate-700 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30 cursor-pointer transition-all duration-200 font-medium"
+                                    >
+                                        <span className="truncate">
+                                            {formData.estado_id && estadosLista.find((e: any) => e.id === formData.estado_id)
+                                                ? `${estadosLista.find((e: any) => e.id === formData.estado_id)?.sigla} - ${estadosLista.find((e: any) => e.id === formData.estado_id)?.nome}`
+                                                : '🇧🇷 Nacional (Todos os estados)'}
+                                        </span>
+                                        <ChevronDown className={cn("h-5 w-5 transition-transform flex-shrink-0", mostrarListaEstados && "rotate-180")} />
+                                    </button>
+
+                                    {mostrarListaEstados && (
+                                        <div className="absolute z-20 mt-2 w-full max-h-64 overflow-auto bg-[var(--color-bg)] border border-orange-600 rounded-2xl shadow-xl p-2 backdrop-blur-md">
+                                            <div className="flex flex-col gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData((prev) => ({ ...prev, estado_id: "" }));
+                                                        setMostrarListaEstados(false);
+                                                    }}
+                                                    className={cn(
+                                                        "w-full text-left px-4 py-3 text-sm font-medium transition-colors rounded-lg border hover:bg-orange-600/5",
+                                                        formData.estado_id === ""
+                                                            ? "border-orange-600 text-orange-300 bg-[var(--color-bg)]"
+                                                            : "border-orange-600 text-slate-700 bg-[var(--color-bg)]"
+                                                    )}
+                                                >
+                                                    🇧🇷 Nacional (Todos os estados)
+                                                </button>
+                                                {estadosLista.length > 0 ? (
+                                                    estadosLista.map((e) => (
+                                                        <button
+                                                            key={e.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setFormData((prev) => ({ ...prev, estado_id: e.id }));
+                                                                setMostrarListaEstados(false);
+                                                            }}
+                                                            className={cn(
+                                                                "w-full text-left px-4 py-3 text-sm font-medium transition-colors rounded-lg border hover:bg-orange-600/5",
+                                                                formData.estado_id === e.id
+                                                                    ? "border-orange-600 text-orange-300 bg-[var(--color-bg)]"
+                                                                    : "border-orange-600 text-slate-700 bg-[var(--color-bg)]"
+                                                            )}
+                                                        >
+                                                            {e.sigla} - {e.nome}
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-4 py-3 text-slate-400 text-sm">
+                                                        Nenhum estado encontrado.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                {formData.estado_id && estados.find(e => e.id === formData.estado_id) && (
+                                    <div className="mt-3 text-sm text-amber-300 flex items-center gap-2">
+                                        <span>📍</span>
+                                        <span>{estados.find(e => e.id === formData.estado_id)?.sigla} - {estados.find(e => e.id === formData.estado_id)?.nome}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Data Início */}
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="group">
+                                    <label className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                                        <span className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded text-center text-xs font-bold text-white flex items-center justify-center">3</span>
+                                        Data de Início <span className="text-red-400">*</span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={formData.data_inicio}
+                                        onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
+                                        className="w-full bg-slate-700/50 hover:bg-slate-700/70 border border-slate-600 hover:border-blue-400/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 cursor-pointer font-medium"
+                                    />
                                 </div>
                             </div>
 
+                            {/* Data Fim */}
                             <div className="group">
-                                <label className="block text-white/90 font-semibold text-sm mb-3 flex items-center gap-2">
-                                    <span className="w-5 h-5 bg-orange-500/20 rounded text-center text-xs font-bold text-orange-400 flex items-center justify-center">4</span>
-                                    Data de Início *
+                                <label className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                                    <span className="w-6 h-6 bg-slate-600 rounded text-center text-xs font-bold text-slate-300 flex items-center justify-center">5</span>
+                                    Data de Término (Opcional)
                                 </label>
                                 <input
                                     type="date"
-                                    value={formData.data_inicio}
-                                    onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
-                                    className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-blue-400/50 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/30 transition-all duration-200 cursor-pointer font-medium"
+                                    value={formData.data_fim}
+                                    onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
+                                    className="w-full bg-slate-700/50 hover:bg-slate-700/70 border border-slate-600 hover:border-red-400/50 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/30 transition-all duration-200 cursor-pointer font-medium"
                                 />
                             </div>
-                        </div>
 
-                        {/* Data Fim */}
-                        <div className="group">
-                            <label className="block text-white/90 font-semibold text-sm mb-3 flex items-center gap-2">
-                                <span className="w-5 h-5 bg-slate-600/40 rounded text-center text-xs font-bold text-white/40 flex items-center justify-center">5</span>
-                                Data de Término (Opcional)
-                            </label>
-                            <input
-                                type="date"
-                                value={formData.data_fim}
-                                onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
-                                className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-red-400/50 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-red-500/80 focus:ring-2 focus:ring-red-500/30 transition-all duration-200 cursor-pointer font-medium"
-                            />
-                        </div>
-
-                        {/* Observações */}
-                        <div className="group">
-                            <label className="block text-white/90 font-semibold text-sm mb-3 flex items-center gap-2">
-                                <span className="w-5 h-5 bg-slate-600/40 rounded text-center text-xs font-bold text-white/40 flex items-center justify-center">6</span>
-                                Observações
-                            </label>
-                            <textarea
-                                value={formData.observacoes}
-                                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                                className="w-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-purple-400/50 rounded-xl px-5 py-3 text-white placeholder-white/40 focus:outline-none focus:border-purple-500/80 focus:ring-2 focus:ring-purple-500/30 transition-all duration-200 h-24 resize-none font-medium"
-                                placeholder="Adicione observações importantes sobre este preço..."
-                            />
-                        </div>
-
-                        {/* SEÇÃO: FAIXAS DE PREÇO POR QUANTIDADE */}
-                        <div className="pt-6 border-t border-white/20">
-                            <div className="flex items-center justify-between mb-4">
-                                <label className="block text-white/90 font-semibold text-base flex items-center gap-2">
-                                    <span className="text-xl">📊</span>
-                                    Faixas de Preço por Quantidade
+                            {/* Observações */}
+                            <div className="group">
+                                <label className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                                    <span className="w-6 h-6 bg-slate-600 rounded text-center text-xs font-bold text-slate-300 flex items-center justify-center">6</span>
+                                    Observações (Opcional)
                                 </label>
-                                <button
-                                    type="button"
-                                    onClick={addFaixaPreco}
-                                    className="bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1 rounded-lg text-sm font-medium flex items-center gap-1 transition-all"
-                                >
-                                    <Plus size={16} /> Adicionar Faixa
-                                </button>
-                            </div>
-                            <p className="text-white/60 text-xs mb-4">
-                                Defina preços diferentes conforme a quantidade/peso: Ex: 0-500kg = R$2,50 | 500-1200kg = R$2,80
-                            </p>
-
-                            {/* Card de Exemplo */}
-                            <div className="bg-blue-500/5 border border-blue-400/30 rounded-lg p-3 mb-4">
-                                <div className="flex gap-2 items-start mb-2">
-                                    <span className="text-blue-300 font-bold text-sm">💡 Exemplo:</span>
-                                </div>
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                    <div className="bg-blue-500/10 p-2 rounded border border-blue-400/20">
-                                        <p className="text-blue-200 font-semibold">0 - 500kg</p>
-                                        <p className="text-blue-300">R$ 2,50/kg</p>
-                                    </div>
-                                    <div className="bg-blue-500/10 p-2 rounded border border-blue-400/20">
-                                        <p className="text-blue-200 font-semibold">500 - 1200kg</p>
-                                        <p className="text-blue-300">R$ 2,80/kg</p>
-                                    </div>
-                                    <div className="bg-blue-500/10 p-2 rounded border border-blue-400/20">
-                                        <p className="text-blue-200 font-semibold">1200+kg</p>
-                                        <p className="text-blue-300">R$ 3,00/kg</p>
-                                    </div>
-                                </div>
+                                <textarea
+                                    value={formData.observacoes}
+                                    onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                                    className="w-full bg-slate-700/50 hover:bg-slate-700/70 border border-slate-600 hover:border-purple-400/50 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all duration-200 h-24 resize-none font-medium"
+                                    placeholder="Adicione observações importantes sobre este preço..."
+                                />
                             </div>
 
-                            {faixasPreco.length === 0 ? (
-                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 text-center">
-                                    <p className="text-blue-300/70 text-sm">Nenhuma faixa de preço adicionada. Clique em "Adicionar Faixa" para começar.</p>
+                            {/* SEÇÃO: FAIXAS DE PREÇO POR QUANTIDADE */}
+                            <div className="pt-8 border-t border-slate-600/50">
+                                <div className="flex items-center justify-between mb-4">
+                                    <label className="text-white font-semibold text-lg flex items-center gap-3">
+                                        <span className="text-2xl">📊</span>
+                                        Faixas de Preço por Quantidade
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={addFaixaPreco}
+                                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all shadow-md"
+                                    >
+                                        <Plus size={18} /> Adicionar Faixa
+                                    </button>
                                 </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {faixasPreco.map((faixa) => (
-                                        <div key={faixa.id} className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                                                <div>
-                                                    <label className="text-white/70 text-xs font-semibold mb-2 block">De (kg)</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        step="0.01"
-                                                        value={faixa.peso_minimo}
-                                                        onChange={(e) => updateFaixaPreco(faixa.id, "peso_minimo", parseFloat(e.target.value))}
-                                                        className="w-full bg-white/10 border border-blue-400/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/30"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-white/70 text-xs font-semibold mb-2 block">Até (kg)</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        step="0.01"
-                                                        value={faixa.peso_maximo || ""}
-                                                        onChange={(e) => updateFaixaPreco(faixa.id, "peso_maximo", e.target.value ? parseFloat(e.target.value) : null)}
-                                                        placeholder="Ilimitado"
-                                                        className="w-full bg-white/10 border border-blue-400/30 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/30"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-white/70 text-xs font-semibold mb-2 block">Preço (R$)</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        step="0.01"
-                                                        value={faixa.preco}
-                                                        onChange={(e) => updateFaixaPreco(faixa.id, "preco", parseFloat(e.target.value))}
-                                                        className="w-full bg-white/10 border border-green-400/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500/80 focus:ring-2 focus:ring-green-500/30"
-                                                    />
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeFaixaPreco(faixa.id)}
-                                                    className="bg-red-500/20 hover:bg-red-500/40 text-red-300 hover:text-red-200 px-3 py-2 rounded-lg font-medium flex items-center justify-center gap-1 transition-all text-sm"
-                                                >
-                                                    <X size={16} /> Remover
-                                                </button>
-                                            </div>
+                                <p className="text-slate-400 text-sm mb-4">
+                                    Defina preços diferentes conforme a quantidade/peso: Ex: 0-500kg = R$2,50 | 500-1200kg = R$2,80
+                                </p>
+
+                                {/* Card de Exemplo */}
+                                <div className="bg-slate-50/5 border border-white/6 rounded-lg p-4 mb-6">
+                                    <div className="flex gap-2 items-start mb-3">
+                                        <span className="text-sky-300 font-bold text-sm">💡 Exemplo:</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                        <div className="bg-slate-800/60 p-3 rounded border border-slate-700/30">
+                                            <p className="text-white font-semibold">0 - 500kg</p>
+                                            <p className="text-sky-300 text-lg font-bold">R$ 2,50/kg</p>
                                         </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* SEÇÃO: VARIAÇÕES POR CONDIÇÃO DE PAGAMENTO */}
-                        <div className="pt-6 border-t border-white/20">
-                            <div className="flex items-center justify-between mb-4">
-                                <label className="block text-white/90 font-semibold text-base flex items-center gap-2">
-                                    <span className="text-xl">💳</span>
-                                    Variações por Prazo de Pagamento
-                                </label>
-                                <button
-                                    type="button"
-                                    onClick={addVariacaoPagamento}
-                                    className="bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 hover:text-purple-200 px-3 py-1 rounded-lg text-sm font-medium flex items-center gap-1 transition-all"
-                                >
-                                    <Plus size={16} /> Adicionar Variação
-                                </button>
-                            </div>
-                            <p className="text-white/60 text-xs mb-4">
-                                Defina preços diferentes por prazo de pagamento: Ex: À vista = R$4,50 | 30 dias = R$4,75
-                            </p>
-
-                            {/* Card de Exemplo */}
-                            <div className="bg-purple-500/5 border border-purple-400/30 rounded-lg p-3 mb-4">
-                                <div className="flex gap-2 items-start mb-2">
-                                    <span className="text-purple-300 font-bold text-sm">💡 Exemplo:</span>
-                                </div>
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                    <div className="bg-purple-500/10 p-2 rounded border border-purple-400/20">
-                                        <p className="text-purple-200 font-semibold">À Vista</p>
-                                        <p className="text-purple-300">R$ 4,50/kg</p>
-                                        <p className="text-purple-400 text-xs">0% variação</p>
-                                    </div>
-                                    <div className="bg-purple-500/10 p-2 rounded border border-purple-400/20">
-                                        <p className="text-purple-200 font-semibold">15 dias</p>
-                                        <p className="text-purple-300">R$ 4,61/kg</p>
-                                        <p className="text-purple-400 text-xs">+2.5% variação</p>
-                                    </div>
-                                    <div className="bg-purple-500/10 p-2 rounded border border-purple-400/20">
-                                        <p className="text-purple-200 font-semibold">30 dias</p>
-                                        <p className="text-purple-300">R$ 4,73/kg</p>
-                                        <p className="text-purple-400 text-xs">+5% variação</p>
+                                        <div className="bg-slate-800/60 p-3 rounded border border-slate-700/30">
+                                            <p className="text-white font-semibold">500 - 1200kg</p>
+                                            <p className="text-sky-300 text-lg font-bold">R$ 2,80/kg</p>
+                                        </div>
+                                        <div className="bg-slate-800/60 p-3 rounded border border-slate-700/30">
+                                            <p className="text-white font-semibold">1200+kg</p>
+                                            <p className="text-sky-300 text-lg font-bold">R$ 3,00/kg</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {variacoesPagamento.length === 0 ? (
-                                <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 text-center">
-                                    <p className="text-purple-300/70 text-sm">Nenhuma variação de pagamento adicionada. Clique em "Adicionar Variação" para começar.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {variacoesPagamento.map((variacao) => (
-                                        <div key={variacao.id} className="bg-purple-500/5 border border-purple-500/20 rounded-lg p-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-                                                <div>
-                                                    <label className="text-white/70 text-xs font-semibold mb-2 block">Condição</label>
-                                                    <input
-                                                        type="text"
-                                                        value={variacao.condicao_nome}
-                                                        onChange={(e) => updateVariacaoPagamento(variacao.id, "condicao_nome", e.target.value)}
-                                                        placeholder="Ex: 30 dias"
-                                                        className="w-full bg-white/10 border border-purple-400/30 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:border-purple-500/80 focus:ring-2 focus:ring-purple-500/30"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-white/70 text-xs font-semibold mb-2 block">Dias</label>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        value={variacao.dias_prazo}
-                                                        onChange={(e) => updateVariacaoPagamento(variacao.id, "dias_prazo", parseInt(e.target.value))}
-                                                        className="w-full bg-white/10 border border-purple-400/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500/80 focus:ring-2 focus:ring-purple-500/30"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-white/70 text-xs font-semibold mb-2 block">Variação (%)</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.1"
-                                                        value={variacao.percentual_variacao}
-                                                        onChange={(e) => updateVariacaoPagamento(variacao.id, "percentual_variacao", parseFloat(e.target.value))}
-                                                        placeholder="Ex: 2.5"
-                                                        className="w-full bg-white/10 border border-orange-400/30 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:border-orange-500/80 focus:ring-2 focus:ring-orange-500/30"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-white/70 text-xs font-semibold mb-2 block">Preço Final (R$)</label>
-                                                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2 text-green-300 font-bold text-sm">
-                                                        {variacao.preco_variado.toFixed(2)}
+                                {faixasPreco.length === 0 ? (
+                                    <div className="bg-slate-50/5 border border-white/6 rounded-lg p-6 text-center">
+                                        <p className="text-sky-300 text-sm">Nenhuma faixa de preço adicionada. Clique em "Adicionar Faixa" para começar.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {faixasPreco.map((faixa, idx) => (
+                                            <div key={faixa.id} className="bg-slate-800/50 border border-slate-700/30 rounded-lg p-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                                                    <div>
+                                                        <label className="text-slate-300 text-xs font-semibold mb-2 block">De (kg)</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            value={faixa.peso_minimo}
+                                                            onChange={(e) => updateFaixaPreco(faixa.id, "peso_minimo", parseFloat(e.target.value))}
+                                                            className="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                                                        />
                                                     </div>
+                                                    <div>
+                                                        <label className="text-slate-300 text-xs font-semibold mb-2 block">Até (kg)</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            value={faixa.peso_maximo || ""}
+                                                            onChange={(e) => updateFaixaPreco(faixa.id, "peso_maximo", e.target.value ? parseFloat(e.target.value) : null)}
+                                                            placeholder="Ilimitado"
+                                                            className="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-3 py-2 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-slate-300 text-xs font-semibold mb-2 block">Preço (R$)</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            value={faixa.preco}
+                                                            onChange={(e) => updateFaixaPreco(faixa.id, "preco", parseFloat(e.target.value))}
+                                                            className="w-full bg-slate-700/50 border border-green-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeFaixaPreco(faixa.id)}
+                                                        className="bg-red-500/20 hover:bg-red-500/40 text-red-300 hover:text-red-200 px-3 py-2 rounded-lg font-medium flex items-center justify-center gap-1 transition-all text-sm"
+                                                    >
+                                                        <X size={16} /> Remover
+                                                    </button>
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeVariacaoPagamento(variacao.id)}
-                                                    className="bg-red-500/20 hover:bg-red-500/40 text-red-300 hover:text-red-200 px-3 py-2 rounded-lg font-medium flex items-center justify-center gap-1 transition-all text-sm"
-                                                >
-                                                    <X size={16} /> Remover
-                                                </button>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Resumo das Variações */}
-                        {(faixasPreco.length > 0 || variacoesPagamento.length > 0) && (
-                            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-lg">
-                                <p className="text-white/80 text-sm font-semibold mb-2">
-                                    ✓ Resumo: {faixasPreco.length} faixa(s) de preço + {variacoesPagamento.length} variação(ões) de pagamento
-                                </p>
-                                <p className="text-white/60 text-xs">
-                                    Essas informações serão enviadas junto com a tabela de preços para aprovação.
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Botões com melhor visual */}
-                        <div className="flex gap-3 pt-6">
-                            <button
-                                onClick={handleCriarPreco}
-                                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-green-500/50 hover:shadow-lg transform hover:scale-105"
-                            >
-                                <Save size={20} /> Criar e Enviar para Aprovação
-                            </button>
-                            <button
-                                onClick={resetForm}
-                                className="flex-1 bg-slate-600/40 hover:bg-slate-600/60 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 border border-white/10 hover:border-white/20"
-                            >
-                                <X size={20} /> Cancelar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ABA: HISTÓRICO */}
-            {activeTab === "historico" && (
-                <div className="bg-white/5 backdrop-blur-md p-6 rounded-xl border border-white/10">
-                    <h3 className="text-white font-bold text-lg mb-4">📈 Histórico de Preços</h3>
-
-                    {historico.length === 0 ? (
-                        <p className="text-white/50 text-center py-8">Nenhum histórico disponível</p>
-                    ) : (
-                        <div className="space-y-3 max-h-96 overflow-y-auto">
-                            {historico.map((item) => (
-                                <div key={item.id} className="bg-white/5 p-3 rounded-lg border border-white/10 flex justify-between items-center">
-                                    <div>
-                                        <p className="text-white font-semibold">{new Date(item.criadoEm).toLocaleDateString("pt-BR")}</p>
-                                        <p className="text-white/70 text-sm">
-                                            {item.preco_anterior && `De R$ ${item.preco_anterior.toFixed(2)}`} → R$ {item.preco_novo.toFixed(2)}
-                                        </p>
+                                        ))}
                                     </div>
-                                    {item.percentual_variacao && (
-                                        <div className={cn("text-right", item.percentual_variacao > 0 ? "text-red-400" : "text-green-400")}>
-                                            <p className="font-bold">{item.percentual_variacao > 0 ? "+" : ""}{item.percentual_variacao.toFixed(2)}%</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* ABA: RELATÓRIO */}
-            {activeTab === "relatorio" && relatorio && (
-                <div className="bg-white/5 backdrop-blur-md p-6 rounded-xl border border-white/10">
-                    <h3 className="text-white font-bold text-lg mb-4">📊 Relatório de Variação</h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Info Material */}
-                        <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                            <h4 className="text-white/70 text-xs uppercase font-bold mb-3">Informações</h4>
-                            <div className="space-y-2 text-white">
-                                <p>
-                                    <span className="opacity-70">Material:</span> {relatorio.classificacao.nome}
-                                </p>
-                                {relatorio.estado && (
-                                    <p>
-                                        <span className="opacity-70">Estado:</span> {relatorio.estado.sigla} - {relatorio.estado.nome}
-                                    </p>
                                 )}
                             </div>
-                        </div>
 
-                        {/* Tendência */}
-                        <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                            <h4 className="text-white/70 text-xs uppercase font-bold mb-3">Tendência</h4>
-                            <div className="flex items-center gap-3">
-                                <span className="text-3xl">
-                                    {relatorio.tendencia === "subindo" && "📈"}
-                                    {relatorio.tendencia === "descendo" && "📉"}
-                                    {relatorio.tendencia === "estavel" && "➡️"}
-                                </span>
-                                <div>
-                                    <p className="text-white font-bold capitalize">{relatorio.tendencia}</p>
-                                    {relatorio.percentual_variacao && (
-                                        <p className={cn("text-sm", relatorio.percentual_variacao > 0 ? "text-red-400" : "text-green-400")}>
-                                            {relatorio.percentual_variacao > 0 ? "+" : ""}{relatorio.percentual_variacao.toFixed(2)}%
-                                        </p>
+                            {/* SEÇÃO: VARIAÇÕES POR CONDIÇÃO DE PAGAMENTO */}
+                            <div className="pt-8 border-t border-slate-600/50">
+                                <div className="flex items-center justify-between mb-4">
+                                    <label className="text-white font-semibold text-lg flex items-center gap-3">
+                                        <span className="text-2xl">💳</span>
+                                        Variações por Prazo de Pagamento
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={addVariacaoPagamento}
+                                        className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-2 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all shadow-md"
+                                    >
+                                        <Plus size={18} /> Adicionar Variação
+                                    </button>
+                                </div>
+                                <p className="text-slate-400 text-sm mb-4">
+                                    Defina preços diferentes por prazo de pagamento: Ex: À vista = R$4,50 | 30 dias = R$4,75
+                                </p>
+
+                                {/* Card de Exemplo */}
+                                <div className="bg-slate-50/5 border border-white/6 rounded-lg p-4 mb-6">
+                                    <div className="flex gap-2 items-start mb-3">
+                                        <span className="text-violet-300 font-bold text-sm">💡 Exemplo:</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                        <div className="bg-slate-800/60 p-3 rounded border border-slate-700/30">
+                                            <p className="text-white font-semibold">À Vista</p>
+                                            <p className="text-violet-300 text-lg font-bold">R$ 4,50/kg</p>
+                                            <p className="text-slate-400 text-xs">0% variação</p>
+                                        </div>
+                                        <div className="bg-slate-800/60 p-3 rounded border border-slate-700/30">
+                                            <p className="text-white font-semibold">15 dias</p>
+                                            <p className="text-violet-300 text-lg font-bold">R$ 4,61/kg</p>
+                                            <p className="text-slate-400 text-xs">+2.5% variação</p>
+                                        </div>
+                                        <div className="bg-slate-800/60 p-3 rounded border border-slate-700/30">
+                                            <p className="text-white font-semibold">30 dias</p>
+                                            <p className="text-violet-300 text-lg font-bold">R$ 4,73/kg</p>
+                                            <p className="text-slate-400 text-xs">+5% variação</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {variacoesPagamento.length === 0 ? (
+                                    <div className="bg-slate-50/5 border border-white/6 rounded-lg p-6 text-center">
+                                        <p className="text-violet-300 text-sm">Nenhuma variação de pagamento adicionada. Clique em "Adicionar Variação" para começar.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {variacoesPagamento.map((variacao) => (
+                                            <div key={variacao.id} className="bg-slate-800/50 border border-slate-700/30 rounded-lg p-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                                                    <div>
+                                                        <label className="text-slate-300 text-xs font-semibold mb-2 block">Condição</label>
+                                                        <input
+                                                            type="text"
+                                                            value={variacao.condicao_nome}
+                                                            onChange={(e) => updateVariacaoPagamento(variacao.id, "condicao_nome", e.target.value)}
+                                                            placeholder="Ex: 30 dias"
+                                                            className="w-full bg-slate-700/50 border border-purple-500/30 rounded-lg px-3 py-2 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-slate-300 text-xs font-semibold mb-2 block">Dias</label>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={variacao.dias_prazo}
+                                                            onChange={(e) => updateVariacaoPagamento(variacao.id, "dias_prazo", parseInt(e.target.value))}
+                                                            className="w-full bg-slate-700/50 border border-purple-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-slate-300 text-xs font-semibold mb-2 block">Variação (%)</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.1"
+                                                            value={variacao.percentual_variacao}
+                                                            onChange={(e) => updateVariacaoPagamento(variacao.id, "percentual_variacao", parseFloat(e.target.value))}
+                                                            placeholder="Ex: 2.5"
+                                                            className="w-full bg-slate-700/50 border border-orange-500/30 rounded-lg px-3 py-2 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/30"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-slate-300 text-xs font-semibold mb-2 block">Preço Final (R$)</label>
+                                                        <div className="bg-slate-700/70 border border-green-500/30 rounded-lg px-3 py-2 text-green-400 font-bold text-sm">
+                                                            {variacao.preco_variado.toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeVariacaoPagamento(variacao.id)}
+                                                        className="bg-red-500/20 hover:bg-red-500/40 text-red-300 hover:text-red-200 px-3 py-2 rounded-lg font-medium flex items-center justify-center gap-1 transition-all text-sm"
+                                                    >
+                                                        <X size={16} /> Remover
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Resumo */}
+                            {(faixasPreco.length > 0 || variacoesPagamento.length > 0) && (
+                                <div className="mt-8 p-4 bg-slate-50/3 border border-white/6 rounded-lg">
+                                    <p className="text-white text-sm font-semibold mb-2">
+                                        ✓ Resumo: {faixasPreco.length} faixa(s) de preço + {variacoesPagamento.length} variação(ões) de pagamento
+                                    </p>
+                                    <p className="text-slate-400 text-xs">
+                                        Essas informações serão enviadas junto com a tabela de preços para aprovação.
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Botões */}
+                            <div className="flex flex-col md:flex-row gap-3 pt-8">
+                                <button
+                                    onClick={handleCriarPreco}
+                                    className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-green-600/40 transform hover:scale-105"
+                                >
+                                    <Save size={20} /> Criar e Enviar para Aprovação
+                                </button>
+                                <button
+                                    onClick={resetForm}
+                                    className="flex-1 bg-slate-700/50 hover:bg-slate-700/80 text-slate-200 hover:text-white font-bold py-3 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 border border-slate-600/50"
+                                >
+                                    <X size={20} /> Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ABA: HISTÓRICO */}
+                {activeTab === "historico" && (
+                    <div className="bg-gradient-to-br from-slate-700/30 to-slate-800/30 backdrop-blur-md p-6 md:p-8 rounded-xl border border-slate-600/50 shadow-lg">
+                        <h3 className="text-white font-bold text-2xl mb-6 flex items-center gap-3">
+                            <span className="text-3xl">📈</span>Histórico de Preços
+                        </h3>
+
+                        {historico.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-slate-400 text-lg">Nenhum histórico disponível</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                                {historico.map((item) => (
+                                    <div key={item.id} className="bg-slate-700/40 hover:bg-slate-700/60 p-4 rounded-lg border border-slate-600/50 flex justify-between items-center transition-colors">
+                                        <div className="flex-1">
+                                            <p className="text-white font-semibold">{new Date(item.criadoEm).toLocaleDateString("pt-BR")}</p>
+                                            <p className="text-slate-400 text-sm mt-1">
+                                                {item.preco_anterior && `De R$ ${item.preco_anterior.toFixed(2)}`} → <span className="text-green-400 font-bold">R$ {item.preco_novo.toFixed(2)}</span>
+                                            </p>
+                                        </div>
+                                        {item.percentual_variacao && (
+                                            <div className={cn("text-right pl-4", item.percentual_variacao > 0 ? "text-red-400" : "text-green-400")}>
+                                                <p className="font-bold text-lg">{item.percentual_variacao > 0 ? "+" : ""}{item.percentual_variacao.toFixed(2)}%</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ABA: RELATÓRIO */}
+                {activeTab === "relatorio" && relatorio && (
+                    <div className="bg-gradient-to-br from-slate-700/30 to-slate-800/30 backdrop-blur-md p-6 md:p-8 rounded-xl border border-slate-600/50 shadow-lg">
+                        <h3 className="text-white font-bold text-2xl mb-8 flex items-center gap-3">
+                            <span className="text-3xl">📊</span>Relatório de Variação
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Info Material */}
+                            <div className="bg-slate-700/40 p-6 rounded-lg border border-slate-600/50">
+                                <h4 className="text-slate-400 text-xs uppercase font-bold mb-4 tracking-wider">Informações</h4>
+                                <div className="space-y-3 text-white">
+                                    <div>
+                                        <p className="text-slate-400 text-sm">Material</p>
+                                        <p className="text-lg font-bold text-orange-400">{relatorio.classificacao.nome}</p>
+                                    </div>
+                                    {relatorio.estado && (
+                                        <div>
+                                            <p className="text-slate-400 text-sm">Estado</p>
+                                            <p className="text-lg font-bold">{relatorio.estado.sigla} - {relatorio.estado.nome}</p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Estatísticas */}
-                        <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                            <h4 className="text-white/70 text-xs uppercase font-bold mb-3">Preço Atual</h4>
-                            <p className="text-3xl font-bold text-green-400">
-                                R$ {relatorio.preco_atual.toFixed(2)}
-                            </p>
-                        </div>
+                            {/* Tendência */}
+                            <div className="bg-slate-700/40 p-6 rounded-lg border border-slate-600/50">
+                                <h4 className="text-slate-400 text-xs uppercase font-bold mb-4 tracking-wider">Tendência</h4>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-5xl">
+                                        {relatorio.tendencia === "subindo" && "📈"}
+                                        {relatorio.tendencia === "descendo" && "📉"}
+                                        {relatorio.tendencia === "estavel" && "➡️"}
+                                    </span>
+                                    <div>
+                                        <p className="text-white font-bold capitalize text-lg">{relatorio.tendencia}</p>
+                                        {relatorio.percentual_variacao && (
+                                            <p className={cn("text-lg font-bold", relatorio.percentual_variacao > 0 ? "text-red-400" : "text-green-400")}>
+                                                {relatorio.percentual_variacao > 0 ? "+" : ""}{relatorio.percentual_variacao.toFixed(2)}%
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                            <h4 className="text-white/70 text-xs uppercase font-bold mb-3">Preço Anterior</h4>
-                            <p className="text-3xl font-bold text-orange-400">
-                                {relatorio.preco_anterior ? `R$ ${relatorio.preco_anterior.toFixed(2)}` : "N/A"}
-                            </p>
-                        </div>
+                            {/* Preço Atual */}
+                            <div className="bg-slate-700/40 p-6 rounded-lg border border-slate-600/50 lg:col-span-1">
+                                <h4 className="text-slate-400 text-xs uppercase font-bold mb-4 tracking-wider">Preço Atual</h4>
+                                <p className="text-4xl font-bold text-green-400">
+                                    R$ {relatorio.preco_atual.toFixed(2)}
+                                </p>
+                            </div>
 
-                        {/* Estatísticas 30 dias */}
-                        <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                            <h4 className="text-white/70 text-xs uppercase font-bold mb-3">Média (30 dias)</h4>
-                            <p className="text-2xl font-bold text-blue-400">
-                                R${relatorio.preco_medio_30_dias?.toFixed(2) || "N/A"}
-                            </p>
-                        </div>
+                            {/* Preço Anterior */}
+                            <div className="bg-slate-700/40 p-6 rounded-lg border border-slate-600/50">
+                                <h4 className="text-slate-400 text-xs uppercase font-bold mb-4 tracking-wider">Preço Anterior</h4>
+                                <p className="text-4xl font-bold text-orange-400">
+                                    {relatorio.preco_anterior ? `R$ ${relatorio.preco_anterior.toFixed(2)}` : "N/A"}
+                                </p>
+                            </div>
 
-                        <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                            <h4 className="text-white/70 text-xs uppercase font-bold mb-3">Mín/Máx (30 dias)</h4>
-                            <p className="text-sm text-white">
-                                Min: <span className="font-bold text-green-400">R$ {relatorio.preco_minimo_30_dias?.toFixed(2)}</span>
-                            </p>
-                            <p className="text-sm text-white">
-                                Máx: <span className="font-bold text-red-400">R$ {relatorio.preco_maximo_30_dias?.toFixed(2)}</span>
-                            </p>
+                            {/* Média 30 dias */}
+                            <div className="bg-slate-700/40 p-6 rounded-lg border border-slate-600/50">
+                                <h4 className="text-slate-400 text-xs uppercase font-bold mb-4 tracking-wider">Média (30 dias)</h4>
+                                <p className="text-4xl font-bold text-blue-400">
+                                    R${relatorio.preco_medio_30_dias?.toFixed(2) || "N/A"}
+                                </p>
+                            </div>
+
+                            {/* Mín/Máx 30 dias */}
+                            <div className="bg-slate-700/40 p-6 rounded-lg border border-slate-600/50">
+                                <h4 className="text-slate-400 text-xs uppercase font-bold mb-4 tracking-wider">Mín/Máx (30 dias)</h4>
+                                <div className="space-y-2">
+                                    <p className="text-sm text-slate-300">
+                                        Mín: <span className="font-bold text-green-400 text-lg">R$ {relatorio.preco_minimo_30_dias?.toFixed(2)}</span>
+                                    </p>
+                                    <p className="text-sm text-slate-300">
+                                        Máx: <span className="font-bold text-red-400 text-lg">R$ {relatorio.preco_maximo_30_dias?.toFixed(2)}</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
-    );
-}
+                )}
+            </div>
+        </div>);
+};
+
+

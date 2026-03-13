@@ -58,25 +58,25 @@ const FornecedoresList = () => {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row w-full md:w-auto sm:items-center gap-3">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar por nome, CNPJ ou cidade..."
-              className="pl-10 pr-4 py-2 w-full md:w-80 rounded-md border-none shadow-lg text-sm outline-none"
+              className="h-11 pl-10 pr-4 w-full sm:w-80 rounded-md border-none shadow-lg text-sm outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
-            className="bg-white text-[var(--color-primary)] px-6 py-2 rounded-md font-bold shadow-md hover:bg-gray-100 transition-all uppercase text-sm flex items-center justify-center gap-2"
+            className="h-11 bg-white text-[var(--color-primary)] px-6 rounded-md font-bold shadow-md hover:bg-gray-100 transition-all uppercase text-sm flex items-center justify-center gap-2"
             onClick={() => navigate("/fornecedores/aprovar")}
           >
             <Plus size={18} /> Aceitar Fornecedor
           </button>
           <button
-            className="bg-white text-[var(--color-primary)] px-6 py-2 rounded-md font-bold shadow-md hover:bg-gray-100 transition-all uppercase text-sm flex items-center justify-center gap-2"
+            className="h-11 bg-white text-[var(--color-primary)] px-6 rounded-md font-bold shadow-md hover:bg-gray-100 transition-all uppercase text-sm flex items-center justify-center gap-2"
             onClick={() => navigate("/fornecedores/novo")}
           >
             <Plus size={18} /> Novo Fornecedor

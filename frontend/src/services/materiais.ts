@@ -18,9 +18,16 @@ export interface Material {
   pesoBruto?: number;
   pesoLiquido?: number;
   contaminacao?: number;
-  cambio?: number;
   preco?: number;
   dataEntrada?: string;
+}
+
+export interface Fornecedor {
+  id: string;
+  name: string;
+  email: string;
+  cnpj?: string;
+  status?: boolean;
 }
 
 export const listarMateriais = async (): Promise<Material[]> => {
@@ -35,6 +42,11 @@ export const getAllMateriais = async (status?: string): Promise<Material[]> => {
 
 export const getTiposMateriais = async () => {
   const res = await api.get('/material');
+  return res.data;
+};
+
+export const listarFornecedores = async (): Promise<Fornecedor[]> => {
+  const res = await api.get('/fornecedores');
   return res.data;
 };
 

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
-import { createuser, listarUsuarios, editarUsuario, excluirUsuario } from "../services/user-services";
+import { createuser, listarUsuarios, editarUsuario, excluirUsuario } from "../services/user-services.js";
 import bcrypt from "bcrypt"
+import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
 
@@ -18,13 +19,15 @@ router.post("/register-user", async (req: Request, res: Response) => {
         const { nome, email, perfil, senha } = req.body;
 
         if (!email || !senha) {
-            return res.status(400).json({ message: "E-mail, email e  são obrigatórios" })
+            return res.status(400).json({ message: "E-mail e senha são obrigatórios" })
         };
         const hashedPassword = await bcrypt.hash(senha, 10);
         const newuser = await createuser({
+            id: uuidv4(),
             nome,
             email,
             perfil,
+            password: hashedPassword,
             senha: hashedPassword
         });
         console.log(newuser)

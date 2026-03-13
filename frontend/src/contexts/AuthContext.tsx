@@ -33,11 +33,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const stored = localStorage.getItem("user");
     return stored ? JSON.parse(stored) : null;
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const res = await api.post("/login", { email, senha: password });
+      const res = await api.post("/login", { email, password });
       setUser(res.data.user);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("token", res.data.token);
@@ -63,10 +63,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loginAsAdmin = async () => {
     setLoading(true);
     try {
-      // Login automático como admin para desenvolvimento
       const res = await api.post("/login", {
         email: "admin@jitsucata.com",
-        senha: "admin123",
+        password: "admin123",
       });
       setUser(res.data.user);
       localStorage.setItem("user", JSON.stringify(res.data.user));

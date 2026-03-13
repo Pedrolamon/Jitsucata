@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express"
-import { getInventory, deleteInventory, patchInventory, postInventory, postMaterial, getMaterial } from "../services/inventory-services"
+import { getInventory, deleteInventory, patchInventory, postInventory, postMaterial, getMaterial } from "../services/inventory-services.js"
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
@@ -20,7 +20,7 @@ router.get("/materiais", async (req: Request, res: Response) => {
             dataFim: dataFim as string | undefined
         });
         return res.json(inventory);
-    } 
+    }
 });
 
 router.post("/materiais", async (req: Request, res: Response) => {
@@ -37,8 +37,8 @@ router.post("/materiais", async (req: Request, res: Response) => {
     } catch (error) {
         // 3. Se houver erro (banco fora, dados inválidos), cai aqui
         console.error("Erro ao adicionar material:", error);
-        
-        return res.status(500).json({ 
+
+        return res.status(500).json({
             message: "Erro ao adicionar material ao estoque",
             error: error instanceof Error ? error.message : "Erro desconhecido"
         });
@@ -75,7 +75,7 @@ router.patch("/materiais/:id", async (req: Request, res: Response) => {
         return res.json(atualizado);
     } catch (error) {
         console.error(error);
-            return res.status(500).json({ message: "Erro ao atualizar material do estoque" });
+        return res.status(500).json({ message: "Erro ao atualizar material do estoque" });
     }
 });
 
@@ -89,13 +89,5 @@ router.delete("/materiais/:id", async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Erro ao remover material do estoque" });
     }
 });
-
-
-
-
-
-
-
-
 
 export default router

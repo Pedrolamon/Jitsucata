@@ -8,7 +8,7 @@ import {
   updatePagamento,
   deletePagamento,
   getResumoFinanceiro,
-} from "../services/pagamentos-services";
+} from "../services/pagamentos-services.js";
 
 const router = Router();
 

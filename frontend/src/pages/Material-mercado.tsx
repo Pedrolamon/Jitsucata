@@ -39,7 +39,10 @@ const MapaAbastecimento = () => {
       return {
         ...first,
         materiais: arr,
-        quantidadeTotal: arr.reduce((acc: number, x: any) => acc + x.quantidade, 0),
+        quantidadeTotal: arr.reduce((acc: number, x: any) => {
+          const unidade = x.unidade || first.unidade;
+          return acc + (Number(x.quantidade) ? (x.unidade?.toLowerCase() === 'kg' ? Number(x.quantidade) / 1000 : Number(x.quantidade)) : 0);
+        }, 0),
       };
     });
     setFornecedores(fornecedoresList);
@@ -95,7 +98,7 @@ const MapaAbastecimento = () => {
           <input
             type="text"
             placeholder="Buscar fornecedor..."
-            className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white text-xs outline-none focus:bg-white/20 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-gray-500 text-xs outline-none focus:bg-white/20 transition-all"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
@@ -140,7 +143,7 @@ const MapaAbastecimento = () => {
                 <select
                   value={filtroVolume}
                   onChange={(e) => setFiltroVolume(e.target.value)}
-                  className="w-full mt-1 p-2 rounded-lg bg-white/20 text-white border border-white/30 text-xs"
+                  className="w-full mt-1 p-2 rounded-lg bg-white/20 text-gray-500 border border-white/30 text-xs"
                 >
                   <option value="Todos">Todos</option>
                   <option value="Maior Volume">Maior Volume</option>

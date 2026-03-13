@@ -14,7 +14,7 @@ import "leaflet/dist/leaflet.css";
 import { Truck, Navigation, Package, Earth, DollarSign } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // Ícones personalizados
 const iconFornecedor = new L.Icon({
@@ -42,22 +42,16 @@ const ZONAS_CONFIG = [
 ];
 
 const CriarRota = () => {
-  const location = useLocation();
   const [fornecedores, setFornecedores] = useState<any[]>([]);
   const [selecionados, setSelecionados] = useState<string[]>([]);
   const [exibirZonas, setExibirZonas] = useState(true);
   const [custoPorKm, setCustoPorKm] = useState(2.5); // custo médio por km
   const [tipoCaminhao, setTipoCaminhao] = useState("3/4");
-  const [distanciaTotal, setDistanciaTotal] = useState(0);
-  const [custoEstimado, setCustoEstimado] = useState(0);
-  const [loading, setLoading]= useState(true)
 
   const pontosRota = fornecedores.filter((f) => selecionados.includes(f.id));
 
   useEffect(() => {
     Promise.all([listarMateriais(), listarFornecedores()]).then(([mats, forns]) => {
-      console.log("DADOS BRUTOS DO BACKEND:", forns);
-
       const fornsComCarga = forns.map(f => {
         // Pega a lat/lng de dentro do objeto address conforme sua interface
         const lat = f.address?.latitude;
@@ -65,7 +59,10 @@ const CriarRota = () => {
 
         const cargaTotal = mats
           .filter(m => m.fornecedorId === f.id && m.status === 'pendente')
-          .reduce((acc, curr) => acc + Number(curr.quantidade), 0);
+          .reduce((acc, curr) => {
+            const qtd = Number(curr.quantidade) || 0;
+            return acc + (curr.unidade?.toLowerCase() === 'kg' ? qtd / 1000 : qtd);
+          }, 0);
 
         // Retornamos um novo objeto com a lat/lng "achatada" no primeiro nível
         return {
@@ -76,9 +73,7 @@ const CriarRota = () => {
         };
       });
 
-      console.log("FORNECEDORES PRONTOS:", fornsComCarga);
       setFornecedores(fornsComCarga);
-      setLoading(false);
     });
   }, []);
 
@@ -194,16 +189,10 @@ const CriarRota = () => {
             </div>
             <div className="mt-4 pt-4 border-t border-white/20">
               <p className="text-[9px] uppercase font-bold text-white/50">
-                Distância Estimada
+                Total de Carga
               </p>
               <p className="text-lg font-black italic">
-                {distanciaTotal.toFixed(1)} km
-              </p>
-              <p className="text-[9px] uppercase font-bold text-white/50 mt-2">
-                Custo Estimado ({tipoCaminhao})
-              </p>
-              <p className="text-lg font-black italic text-green-300">
-                R$ {custoEstimado.toFixed(2)}
+                {pontosRota.reduce((acc, curr) => acc + curr.cargaTotal, 0).toFixed(1)} Ton
               </p>
             </div>
           </div>
@@ -221,7 +210,7 @@ const CriarRota = () => {
                 <select
                   value={tipoCaminhao}
                   onChange={(e) => setTipoCaminhao(e.target.value)}
-                  className="w-full mt-1 p-2 rounded-lg bg-white/20 text-white border border-white/30 text-xs"
+                  className="w-full mt-1 p-2 rounded-lg bg-white/20 text-gray-500 border border-white/30 text-xs"
                 >
                   <option value="3/4">3/4</option>
                   <option value="Toco">Toco</option>
@@ -239,7 +228,7 @@ const CriarRota = () => {
                   onChange={(e) =>
                     setCustoPorKm(parseFloat(e.target.value) || 0)
                   }
-                  className="w-full mt-1 p-2 rounded-lg bg-white/20 text-white border border-white/30 text-xs"
+                  className="w-full mt-1 p-2 rounded-lg bg-white/20 text-gray-500 border border-white/30 text-xs"
                   step="0.1"
                 />
               </div>

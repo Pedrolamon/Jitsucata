@@ -89,7 +89,7 @@ export default function PaymentHistory() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className="w-full min-h-screen bg-[var(--color-bg)] p-6">
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Cabeçalho com Busca */}
@@ -139,8 +139,8 @@ export default function PaymentHistory() {
                     key={opt.value}
                     onClick={() => setFiltroRapido(opt.value)}
                     className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold uppercase italic transition-all ${filtroRapido === opt.value
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                   >
                     {opt.label}

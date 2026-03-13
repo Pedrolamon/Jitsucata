@@ -1,4 +1,4 @@
-export default function financialControl (){
+export default function FinancialControl (){
     return(
         <div></div>
     )

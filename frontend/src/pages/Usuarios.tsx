@@ -96,7 +96,7 @@ const Usuarios = () => {
           <input
             type="text"
             placeholder="Buscar usuário..."
-            className="w-full md:w-64 pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white text-sm outline-none focus:bg-white/20 transition-all"
+            className="w-full md:w-64 pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-xl text-gray-500 text-sm outline-none focus:bg-white/20 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -191,7 +191,7 @@ const Usuarios = () => {
                 onClick={() => setPerfilFiltro(p)}
                 className={cn(
                   "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all",
-                  perfilFiltro === p ? "bg-white text-orange-600 shadow-lg" : "bg-white/10 text-white hover:bg-white/20"
+                  perfilFiltro === p ? "bg-white text-orange-600 shadow-lg" : "bg-white/10 text-gray-500 hover:bg-white/20"
                 )}
               >
                 {p}

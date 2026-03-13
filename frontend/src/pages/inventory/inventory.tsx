@@ -33,6 +33,30 @@ export default function Inventory() {
     emTriagem: 0,
   });
 
+  const formatarIdCurto = (id: string) => {
+    const apenasDigitos = id.replace(/\D/g, '');
+    if (apenasDigitos.length > 0) {
+      return apenasDigitos.slice(0, 5);
+    }
+
+    return id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 5).toUpperCase();
+  };
+
+  const formatarDataBR = (data: string) => {
+    if (!data) return '-';
+
+    const dataISO = data.split('T')[0];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dataISO)) {
+      const [ano, mes, dia] = dataISO.split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    const parsed = new Date(data);
+    if (Number.isNaN(parsed.getTime())) return '-';
+
+    return parsed.toLocaleDateString('pt-BR');
+  };
+
   const calcularResumo = (itens: ItemEstoque[]) => {
     const hoje = new Date();
 
@@ -202,7 +226,7 @@ export default function Inventory() {
                 <input
                   type="text"
                   placeholder="ID do Lote ou Material..."
-                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-none focus:bg-white/10 transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-gray-500 text-xs outline-none focus:bg-white/10 transition-all"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                 />
@@ -228,7 +252,7 @@ export default function Inventory() {
 
               <button
                 type="submit"
-                className="w-full mt-2 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-[10px] font-black uppercase tracking-widest transition-all"
+                className="w-full mt-2 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-gray-500 text-[10px] font-black uppercase tracking-widest transition-all"
               >
                 Aplicar filtros
               </button>
@@ -284,8 +308,8 @@ export default function Inventory() {
                   {estoqueFiltrado.map((item) => (
                     <tr key={item.id} className="group hover:bg-orange-50/30 transition-all">
                       <td className="px-8 py-6">
-                        <div className="text-xs font-black text-gray-400 uppercase">#{item.id}</div>
-                        <div className="text-[10px] text-gray-400">Entrada: {item.ultima_entrada}</div>
+                        <div className="text-xs font-black text-gray-400 uppercase">#{formatarIdCurto(item.id)}</div>
+                        <div className="text-[10px] text-gray-400">Entrada: {formatarDataBR(item.ultima_entrada)}</div>
                         {item.patio && (
                           <div className="text-[10px] text-gray-400 mt-1">Pátio: {item.patio}</div>
                         )}

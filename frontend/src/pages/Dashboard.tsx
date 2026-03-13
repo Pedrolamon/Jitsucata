@@ -20,6 +20,7 @@ import {
   GitBranch,
   Boxes,
 } from "lucide-react";
+import { toTons } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
@@ -113,9 +114,9 @@ const DashboardMateriaisAdmin = () => {
   const materiaisEmColeta = materiais.filter((m) => m.status === "em_coleta");
   const materiaisEntregues = materiais.filter((m) => m.status === "entregue");
 
-  const totalVolume = materiais.reduce((acc, curr) => acc + Number(curr.quantidade || 0), 0);
-  const volumePendente = materiaisPendentes.reduce((acc, curr) => acc + Number(curr.quantidade || 0), 0);
-  const volumeEntregue = materiaisEntregues.reduce((acc, curr) => acc + Number(curr.quantidade || 0), 0);
+  const totalVolume = materiais.reduce((acc, curr) => acc + toTons(curr.quantidade, curr.unidade), 0);
+  const volumePendente = materiaisPendentes.reduce((acc, curr) => acc + toTons(curr.quantidade, curr.unidade), 0);
+  const volumeEntregue = materiaisEntregues.reduce((acc, curr) => acc + toTons(curr.quantidade, curr.unidade), 0);
 
   const fornecedoresAtivos = fornecedores.filter((f) => f.status === true);
   const eficiencia = materiaisEntregues.length > 0
@@ -125,7 +126,7 @@ const DashboardMateriaisAdmin = () => {
   // Dados para gráficos
   const statusData = [
     { name: "Pendente", value: materiaisPendentes.length, volume: volumePendente },
-    { name: "Em Coleta", value: materiaisEmColeta.length, volume: materiaisEmColeta.reduce((a, m) => a + Number(m.quantidade || 0), 0) },
+    { name: "Em Coleta", value: materiaisEmColeta.length, volume: materiaisEmColeta.reduce((a, m) => a + toTons(m.quantidade, m.unidade), 0) },
     { name: "Entregue", value: materiaisEntregues.length, volume: volumeEntregue },
   ];
 
@@ -139,7 +140,7 @@ const DashboardMateriaisAdmin = () => {
     materiais: materiais.filter((m) => m.fornecedorId === f.id).length,
     volume: materiais
       .filter((m) => m.fornecedorId === f.id)
-      .reduce((a, m) => a + Number(m.quantidade || 0), 0),
+      .reduce((a, m) => a + toTons(m.quantidade, m.unidade), 0),
   })).sort((a, b) => b.volume - a.volume).slice(0, 6);
 
   // Materiais filtrados
@@ -160,7 +161,7 @@ const DashboardMateriaisAdmin = () => {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="w-full min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 bg-blue-600 rounded-full animate-pulse mx-auto mb-4"></div>
           <p className="text-2xl font-black text-gray-800">Carregando...</p>
@@ -170,7 +171,7 @@ const DashboardMateriaisAdmin = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className="w-full min-h-screen bg-[var(--color-bg)] p-6">
       <div className="max-w-7xl mx-auto space-y-8">
 
         {/* Header Premium */}
@@ -572,16 +573,16 @@ const DashboardMateriaisAdmin = () => {
                       </td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg font-bold text-xs uppercase ${m.status === "entregue"
-                            ? "bg-green-100 text-green-700"
-                            : m.status === "em_coleta"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-orange-100 text-orange-700"
+                          ? "bg-green-100 text-green-700"
+                          : m.status === "em_coleta"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-orange-100 text-orange-700"
                           }`}>
                           <span className={`w-2 h-2 rounded-full ${m.status === "entregue"
-                              ? "bg-green-600"
-                              : m.status === "em_coleta"
-                                ? "bg-blue-600"
-                                : "bg-orange-600"
+                            ? "bg-green-600"
+                            : m.status === "em_coleta"
+                              ? "bg-blue-600"
+                              : "bg-orange-600"
                             }`} />
                           {m.status === "entregue" ? "Entregue" : m.status === "em_coleta" ? "Em Coleta" : "Pendente"}
                         </span>

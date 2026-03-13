@@ -18,7 +18,6 @@ import {
   BadgeCheck,
   Handshake,
   History,
-  TrendingUp,
   BarChart3
 } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
@@ -27,7 +26,7 @@ import type { ReactNode } from "react";
 import { listarAlertasAtivos } from '../services/alertas';
 
 //botão de admin
-import DevLogin from "./adminButton";
+import DevLogin from "./AdminButton";
 
 const alertasNaoLidos = listarAlertasAtivos().length;
 
@@ -64,6 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const sidebarClasses = sidebarOpen ? "w-64" : "w-20";
   const { logout, user } = useAuth();
+
 
   return (
     <aside
@@ -118,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {sidebarOpen && toggleViewAs && (
           <button
             onClick={toggleViewAs}
-            className="mb-2 flex items-center justify-center p-2 rounded-xl bg-white/20 text-white text-xs uppercase tracking-wider hover:bg-white/30 transition-colors"
+            className="mb-2 flex items-center justify-center p-2 rounded-xl bg-white/20 text-gray-500 text-xs uppercase tracking-wider hover:bg-white/30 transition-colors"
           >
             {viewAs === 'admin' ? 'Ver como Fornecedor' : 'Ver como Admin'}
           </button>
@@ -171,7 +171,6 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/pagamentos", label: "Pagamentos", icon: CircleDollarSign },
     { href: "/historico-pagamento", label: "Historico Pagamento", icon: ScrollText },
     { href: "/inventory", label: "Estoque", icon: Box },
-    { href: "/tabela-preços", label: "Tabela de Preço", icon: Grid2x2Check },
     { href: "/precos-avancados", label: "💰 Preços Avançados", icon: BarChart3 },
     { href: "/Classificação", label: "Classificação", icon: BookMarked },
   ];
@@ -188,7 +187,7 @@ export default function Layout({ children }: LayoutProps) {
   const sidebarItems = effectiveRole === 'fornecedor' ? supplierItems : commonItems;
 
   return (
-    <div className="flex min-h-screen w-full bg-[var(--color-primary)]">
+    <div className="flex min-h-screen w-full bg-[var(--color-bg)]">
       <aside className="fixed top-0 left-0 h-screen z-50">
         <Sidebar
           sidebarOpen={sidebarOpen}

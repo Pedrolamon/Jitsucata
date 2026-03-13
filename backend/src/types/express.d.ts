@@ -11,10 +11,15 @@ declare module 'express' {
 export type Perfil = 'admin' | 'fornecedor' | 'financeiro';
 
 export interface Usuario {
+  id: string;
   nome: string;
   email: string;
-  perfil: Perfil;
+  role?: string;
+  perfil?: string;
+  status?: boolean;
+  password: string;
   senha?: string;
+  criado_at?: string;
 }
 
 export interface Fornecedor {

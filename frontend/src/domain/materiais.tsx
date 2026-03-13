@@ -178,3 +178,224 @@ Descrição: "Material obtido a partir do processo de briquetagem de sucata de c
 Contaminações:" Terra, concreto, pedra, óleo, carepa, “póda-china”, estopa, etc"
 }
 ]
+
+
+export const ClassificaçãoMateriaisNãoferrosos = [
+  {
+    "Titulo": "SUCATA DE ALUMÍNIO BLOCO",
+    "ImagemUrl": "aluminioBloco",
+    "Descrição": "Peças fundidas de ligas de alumínio, como cárteres, carcaças de câmbio, blocos de motor e peças automotivas diversas. Deve estar isento de excesso de óleo, graxa, ferro (prisioneiros, válvulas), magnésio e latão.",
+    "Contaminações": "Ferro fixo, graxa pesada, buchas de aço, latão, antimônio e terra."
+  },
+  {
+    "Titulo": "SUCATA DE ALUMÍNIO BORRA",
+    "ImagemUrl": "borraAluminio",
+    "Descrição": "Subproduto resultante da fusão do alumínio em fornos (escória). Contém óxidos de alumínio e metal recuperável em diferentes concentrações.",
+    "Contaminações": "Sais de fundição, óxidos, terra e outros metais não ferrosos."
+  },
+  {
+    "Titulo": "SUCATA DE CABOS COM ALMA DE AÇO",
+    "ImagemUrl": "cabosAlmaAco",
+    "Descrição": "Condutores elétricos de alumínio que possuem um fio ou cordoalha de aço central para sustentação mecânica. Comum em linhas de transmissão de alta tensão.",
+    "Contaminações": "Aço (alma central), graxa de proteção e oxidação severa."
+  },
+  {
+    "Titulo": "SUCATA DE ALUMÍNIO CAVACO",
+    "ImagemUrl": "cavacoAluminio",
+    "Descrição": "Resíduos provenientes de processos de usinagem (torneamento, fresagem, furação). Deve ser classificado por liga (bloco ou perfil) sempre que possível.",
+    "Contaminações": "Óleo de corte (solúvel), umidade, cavaco de ferro, plástico e buchas."
+  },
+  {
+    "Titulo": "SUCATA DE ALUMÍNIO CHAPARIA",
+    "Descrição": "Folhas de alumínio limpas, provenientes de sobras de processos industriais ou utensílios. Geralmente ligas da série 1000 ou 3000.",
+    "ImagemUrl": "chapariaAluminio",
+    "Contaminações": "Papel, plásticos, colas e outros metais."
+  },
+  {
+    "Titulo": "SUCATA DE ALUMÍNIO CHAPARIA MISTA",
+    "ImagemUrl": "chapariaMista",
+    "Descrição": "Mistura de chapas de alumínio de diferentes espessuras e ligas, podendo conter pintura e vernizes. Inclui utensílios domésticos usados.",
+    "Contaminações": "Plástico, parafusos de ferro, restos de alimentos e madeira."
+  },
+  {
+    "Titulo": "SUCATA DE CHAPAS OFFSET",
+    "ImagemUrl": "chapasOffset",
+    "Descrição": "Chapas de alumínio de alta pureza (série 1000) utilizadas na indústria gráfica. Devem estar limpas e sem excesso de tinta seca.",
+    "Contaminações": "Papel, plástico de proteção e resíduos químicos de revelação."
+  },
+  {
+    "Titulo": "SUCATA DE ALUMÍNIO ESTAMPARIA",
+    "ImagemUrl": "estampariaAluminio",
+    "Descrição": "Retalhos novos e limpos provenientes de processos de corte e estampagem industrial. Material de alta qualidade e liga conhecida.",
+    "Contaminações": "Óleo de estampagem leve e eventuais fitas adesivas."
+  },
+  {
+    "Titulo": "SUCATA DE PISTÕES DE ALUMÍNIO",
+    "ImagemUrl": "pistoesAluminio",
+    "Descrição": "Pistões de motores de combustão interna. Devem preferencialmente estar sem as bielas e anéis de aço.",
+    "Contaminações": "Anéis de segmento (aço), pinos de aço, grafite e carvão de queima."
+  },
+  {
+    "Titulo": "SUCATA DE LATAS PRENSADAS",
+    "ImagemUrl": "latasPrensadas",
+    "Descrição": "Latas de alumínio de bebidas (UBC - Used Beverage Cans) compactadas em fardos de alta densidade.",
+    "Contaminações": "Líquidos residuais, areia, pedras e latas de aço (ferrosas)."
+  },
+  {
+    "Titulo": "SUCATA DE LATAS SOLTAS OU ENFARDADAS",
+    "ImagemUrl": "latasSoltasEnfardadas",
+    "Descrição": "Latas de alumínio de bebidas em estado solto ou em fardos de baixa densidade.",
+    "Contaminações": "Plásticos, canudos, terra e umidade."
+  },
+  {
+    "Titulo": "SUCATA DE ALUMÍNIO PANELA",
+    "ImagemUrl": "panelaAluminio",
+    "Descrição": "Utensílios domésticos de alumínio fundido ou laminado. Devem ser removidos cabos de baquelite ou madeira.",
+    "Contaminações": "Cabos de plástico, rebites de ferro, gordura e restos orgânicos."
+  },
+  {
+    "Titulo": "SUCATA DE PERFIL BRANCO",
+    "ImagemUrl": "perfilBranco",
+    "Descrição": "Perfis de alumínio extrudado (ligas série 6000) sem pintura ou anodizados. Comum em esquadrias e estruturas.",
+    "Contaminações": "Borrachas de vedação, parafusos, escovinhas e resíduos de cimento."
+  },
+  {
+    "Titulo": "SUCATA DE PERFIL MISTO",
+    "ImagemUrl": "perfilMisto",
+    "Descrição": "Mistura de perfis de alumínio limpos, pintados, anodizados e com ou sem ruptura térmica.",
+    "Contaminações": "Plásticos, isolantes térmicos, ferro e silicone."
+  },
+  {
+    "Titulo": "SUCATA DE RADIADOR DE ALUMÍNIO",
+    "ImagemUrl": "radiadorAluminio",
+    "Descrição": "Colmeias de radiadores automotivos compostas inteiramente por alumínio (alhetas e tubos).",
+    "Contaminações": "Plástico das caixas laterais, resíduos de aditivo e óleo."
+  },
+  {
+    "Titulo": "SUCATA DE RADIADOR ALUMÍNIO-COBRE",
+    "ImagemUrl": "radiadorAluminioCobre",
+    "Descrição": "Radiadores (geralmente de ar-condicionado) com tubos de cobre e alhetas de alumínio.",
+    "Contaminações": "Ferro das cabeceiras, solda de estanho e poeira industrial."
+  },
+  {
+    "Titulo": "SUCATA DE RETALHO INDUSTRIAL OU CHAPA PARA LATA",
+    "ImagemUrl": "retalhoChapaLata",
+    "Descrição": "Sobras de bobinas de alumínio utilizadas na fabricação de corpos ou tampas de latas. Material novo e sem uso.",
+    "Contaminações": "Papel de separação de bobina e umidade."
+  },
+  {
+    "Titulo": "SUCATA DE TELHAS DE ALUMÍNIO",
+    "ImagemUrl": "telhasAluminio",
+    "Descrição": "Folhas de alumínio corrugadas ou trapezoidais usadas em coberturas industriais ou residenciais.",
+    "Contaminações": "Ganchos de fixação de ferro, resíduos de cal, cimento e isolantes térmicos."
+  },
+  {
+    "Titulo": "SUCATA DE COBRE - 1ª CATEGORIA (MEL)",
+    "ImagemUrl": "cobreMel",
+    "Descrição": "Cobre limpo ou isolado; barramentos; fios redondos, retangulares e moídos sem contaminação.",
+    "Contaminações": "Percentuais de não metálicos (descontados no ato da classificação)."
+  },
+  {
+    "Titulo": "SUCATA DE COBRE - 2ª CATEGORIA (MELA 1ª)",
+    "ImagemUrl": "cobreMela1",
+    "Descrição": "Pontas de tubos de cobre limpo sem contaminação.",
+    "Contaminações": "Isento de contaminações externas, mas classificado abaixo da 1ª categoria por formato."
+  },
+  {
+    "Titulo": "SUCATA DE COBRE - 2ª CATEGORIA (MELA 2ª)",
+    "ImagemUrl": "cobreMela2",
+    "Descrição": "Fios esmaltados provenientes de processos industriais.",
+    "Contaminações": "Verniz (esmalte) isolante."
+  },
+  {
+    "Titulo": "SUCATA DE COBRE - 3ª CATEGORIA (MELBE)",
+    "ImagemUrl": "cobreMelbe",
+    "Descrição": "Fios estanhados ou de enrolamento com pontas de soldas. Inclui estamparia miúda contaminada, cavacos, calhas, tachos limpos, tubos e serpentinas de aparelhos de destilação e chapas de caldeiras.",
+    "Contaminações": "Estanho, solda, verniz e oxidação."
+  },
+  {
+    "Titulo": "SUCATA DE COBRE - 4ª CATEGORIA (MELCE)",
+    "ImagemUrl": "cobreMelce",
+    "Descrição": "Material classificado sob consulta e mediante análise da composição química.",
+    "Contaminações": "Diversas (sujeito a análise técnica)."
+  },
+  {
+    "Titulo": "SUCATA DE TOMBACK (VERMELHA)",
+    "ImagemUrl": "tombackVermelha",
+    "Descrição": "Estamparia graúda e miúda e tubos graúdos e miúdos de tomback (liga de cobre e zinco com alto teor de cobre).",
+    "Contaminações": "Isento de outros metais."
+  },
+  {
+    "Titulo": "ESTAMPARIA DE LATÃO - 1ª CATEGORIA (AMARELA)",
+    "ImagemUrl": "lataoAmarela",
+    "Descrição": "Estamparia graúda e miúda de latão, sem contaminações.",
+    "Contaminações": "Isento de ferro e outros metais."
+  },
+  {
+    "Titulo": "ESTAMPARIA DE LATÃO - 2ª CATEGORIA (BEAMARELA)",
+    "ImagemUrl": "lataoBeamarela",
+    "Descrição": "Tubos e pontas de tubos de latão, isentos de outros metais.",
+    "Contaminações": "Oxidação leve, isento de contaminações metálicas externas."
+  },
+  {
+    "Titulo": "PONTAS DE VERGALHÃO DE LATÃO (PONTAS)",
+    "ImagemUrl": "lataoPontas",
+    "Descrição": "Rebarbas de forja de vergalhão de latão e tubos de latão que não se enquadram nas categorias superiores.",
+    "Contaminações": "Rebarbas e sobras de processo produtivo."
+  },
+  {
+    "Titulo": "CAVACO DE LATÃO (FARELO)",
+    "ImagemUrl": "lataoFarelo",
+    "Descrição": "Somente cavaco de vergalhão e grosso. A parte fina eventualmente contida será classificada de acordo com sua perda.",
+    "Contaminações": "Óleo de corte, umidade e finos."
+  },
+  {
+    "Titulo": "SUCATA LEVE DE LATÃO (SUCALEVE)",
+    "ImagemUrl": "sucaleve",
+    "Descrição": "Composta de estamparia limpa de latão estanhado.",
+    "Contaminações": "Banho de estanho."
+  },
+  {
+    "Titulo": "SUCATA PESADA DE LATÃO - 1ª CATEGORIA (SUCAPESADA)",
+    "ImagemUrl": "sucapesada",
+    "Descrição": "Tubos niquelados e chapas niqueladas, casquilhos de lâmpadas e peças constituídas de chapas niqueladas em geral, torneiras, flanges e peças fundidas de latão.",
+    "Contaminações": "Banho de níquel. Deve ser isento de latão com alumínio ou bronze-alumínio."
+  },
+  {
+    "Titulo": "SUCATA PESADA DE LATÃO - 2ª CATEGORIA (SUCAPEBE)",
+    "ImagemUrl": "sucapebe",
+    "Descrição": "Retalhos de tubos almirantado arsenical, aluminado, sincronizados e peças de latão que não se enquadram na categoria acima.",
+    "Contaminações": "Elementos de liga específicos (Arsênio, Alumínio)."
+  },
+  {
+    "Titulo": "TELAS E LÂMINAS DE BRONZE (TELA)",
+    "ImagemUrl": "bronzeTela",
+    "Descrição": "Telas de processos industriais e lâminas finas compostas de liga de bronze.",
+    "Contaminações": "Resíduos de processo, fibras e oxidação."
+  },
+  {
+    "Titulo": "SUCATA DE BRONZE - 1ª CATEGORIA (ABRONZE)",
+    "ImagemUrl": "abronze",
+    "Descrição": "Sucata de bronze isenta de latão e de bronze-alumínio. Mancais e lingotes sujeitos a análise.",
+    "Contaminações": "Isento de latão. Peças mistas pagas conforme classificação da liga predominante."
+  },
+  {
+    "Titulo": "SUCATA DE BRONZE - 2ª CATEGORIA (BEBRONZE)",
+    "ImagemUrl": "bebronze",
+    "Descrição": "Composta de registros e outras peças de liga baixa que não se enquadram na 1ª categoria.",
+    "Contaminações": "Zinco elevado (ligas baixas), resíduos de vedação."
+  },
+  {
+    "Titulo": "SUCATA DE BRONZE - 3ª CATEGORIA (CEBRONZE)",
+    "ImagemUrl": "cebronze",
+    "Descrição": "Radiadores de bronze.",
+    "Contaminações": "Ferro (será descontado no ato da classificação)."
+  },
+  {
+    "Titulo": "SUCATA DE BRONZE - 4ª CATEGORIA (DEBRONZE)",
+    "ImagemUrl": "debronze",
+    "Descrição": "Cavaco de bronze, sem mistura de cavaco de latão, alumínio e outros.",
+    "Contaminações": "Óleo, umidade. Cavaco misturado será classificado conforme análise."
+  }
+
+]

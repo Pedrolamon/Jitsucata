@@ -1,4 +1,4 @@
-import { query, pool } from '../database';
+import { query, pool } from '../database.js';
 import { v4 as uuidv4 } from 'uuid';
 import {
     EstadoBrasil,
@@ -13,7 +13,7 @@ import {
     RelatorioVariacaoPrecos,
     CalculoPrecoBuscador,
     FiltroPrecos
-} from '../types/preco-avancado';
+} from '../types/preco-avancado.js';
 
 // ===== ESTADOS DO BRASIL =====
 
@@ -143,20 +143,32 @@ export async function createTabelaPrecos(
     try {
         await client.query('BEGIN');
 
+        // Calcular preco_base: usar o fornecido ou a primeira faixa de preço
+        let precBase = data.preco_base;
+        if (!precBase && data.faixas && data.faixas.length > 0) {
+            precBase = data.faixas[0].preco_faixa || 0;
+        }
+        if (!precBase) {
+            precBase = 0;
+        }
+
         const id = uuidv4();
         const sql = `INSERT INTO "TabelaPrecosAvancada" 
                  (id, classificacao_id, estado_id, preco_base, data_inicio, data_fim, criado_por_id, status) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, 'pendente_aprovacao') RETURNING *`;
 
-        const result = await client.query(sql, [
+        const values = [
             id,
             data.classificacao_id,
             data.estado_id || null,
-            data.preco_base,
+            precBase,
             data.data_inicio,
             data.data_fim || null,
             userId
-        ]);
+        ];
+
+        console.log("🔍 SQL values:", values);
+        const result = await client.query(sql, values);
 
         const precoId = result.rows[0].id;
 
@@ -176,6 +188,32 @@ export async function createTabelaPrecos(
                     faixa.percentual_desconto || 0,
                     faixa.preco_faixa || null
                 ]);
+            }
+        }
+
+        // Inserir variações de pagamento com preço variado aplicado a TODAS as faixas
+        if (data.variacoes_pagamento && data.variacoes_pagamento.length > 0) {
+            for (const variacao of data.variacoes_pagamento) {
+                // Aplicar variação a cada faixa de preço
+                if (data.faixas && data.faixas.length > 0) {
+                    for (const faixa of data.faixas) {
+                        const precoVariado = (faixa.preco_faixa || 0) * (1 + (variacao.percentual_variacao / 100));
+
+                        const variacaoId = uuidv4();
+                        const variacaoSql = `INSERT INTO "VariacoesPagamentoPreco" 
+                                      (id, preco_id, faixa_id, condicao_nome, percentual_variacao, preco_variado) 
+                                      VALUES ($1, $2, $3, $4, $5, $6)`;
+
+                        await client.query(variacaoSql, [
+                            variacaoId,
+                            precoId,
+                            faixa.id,
+                            variacao.condicao_nome || '',
+                            variacao.percentual_variacao || 0,
+                            precoVariado
+                        ]);
+                    }
+                }
             }
         }
 
@@ -235,6 +273,17 @@ export async function getTabelaPrecosById(id: string): Promise<TabelaPrecosAvanc
     const faixasSql = 'SELECT * FROM "FaixasPreco" WHERE preco_id = $1 ORDER BY peso_minimo ASC';
     const faixasResult = await query(faixasSql, [id]);
     precoTabela.faixas = faixasResult.rows;
+
+    // Buscar variações de pagamento (novo)
+    const variacoesSql = `SELECT 
+        id, preco_id, faixa_id, condicao_nome, 
+        percentual_variacao, preco_variado, 
+        "criadoEm", "atualizadoEm"
+      FROM "VariacoesPagamentoPreco" 
+      WHERE preco_id = $1 
+      ORDER BY condicao_nome ASC, faixa_id ASC`;
+    const variacoesResult = await query(variacoesSql, [id]);
+    precoTabela.variacoes_pagamento = variacoesResult.rows;
 
     return precoTabela;
 }
@@ -386,6 +435,57 @@ export async function approveTabelaPrecos(id: string, userId: string): Promise<T
     }
 }
 
+export async function deleteTabelaPrecos(id: string, userId?: string): Promise<void> {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Verifica se existe
+        const check = await client.query('SELECT * FROM "TabelaPrecosAvancada" WHERE id = $1', [id]);
+        if (check.rows.length === 0) {
+            throw new Error('Tabela de preços não encontrada');
+        }
+
+        // Deletar variações de pagamento associadas
+        await client.query('DELETE FROM "VariacoesPagamentoPreco" WHERE preco_id = $1', [id]);
+
+        // Deletar faixas de preço
+        await client.query('DELETE FROM "FaixasPreco" WHERE preco_id = $1', [id]);
+
+        // Deletar histórico associado: a tabela HistoricoPrecos não possui coluna preco_id,
+        // então removemos por classificacao_id e estado_id relacionados à tabela de preços.
+        const precoRow = check.rows[0];
+        const classificacaoId = precoRow.classificacao_id;
+        const estadoId = precoRow.estado_id;
+
+        if (classificacaoId) {
+            if (estadoId) {
+                await client.query('DELETE FROM "HistoricoPrecos" WHERE classificacao_id = $1 AND (estado_id = $2 OR estado_id IS NULL)', [classificacaoId, estadoId]);
+            } else {
+                await client.query('DELETE FROM "HistoricoPrecos" WHERE classificacao_id = $1 AND estado_id IS NULL', [classificacaoId]);
+            }
+        }
+
+        // Registrar auditoria de deleção
+        const auditoriaId = uuidv4();
+        const auditoriaSql = `INSERT INTO "AuditoriaPrecos" (id, preco_id, acao, usuario_id, status_novo, observacao) VALUES ($1, $2, 'deletado', $3, 'deletado', 'Preço removido pelo usuário')`;
+        await client.query(auditoriaSql, [auditoriaId, id, userId || null]);
+
+        // Deletar auditoria antiga relacionada (opcional: manter histórico de auditoria, aqui remova registros vinculados ao preco)
+        await client.query('DELETE FROM "AuditoriaPrecos" WHERE preco_id = $1 AND id <> $2', [id, auditoriaId]);
+
+        // Finalmente, deletar o registro principal
+        await client.query('DELETE FROM "TabelaPrecosAvancada" WHERE id = $1', [id]);
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
 // ===== CÁLCULO DE PREÇO =====
 
 export async function calcularPreco(dados: CalculoPrecoBuscador): Promise<ResultadoCalculoPreco> {
@@ -435,15 +535,34 @@ export async function calcularPreco(dados: CalculoPrecoBuscador): Promise<Result
 
     // Aplicar variação de condição de pagamento
     let variacaoPagamento = 0;
-    let condicaoPagamento: CondicaoPagamento | undefined;
+    let condicaoPagamento: any | undefined;
 
-    if (dados.condicao_pagamento_id) {
-        const condicaoSql = 'SELECT * FROM "CondicoesPagamento" WHERE id = $1 AND ativo = true';
-        const condicaoResult = await query(condicaoSql, [dados.condicao_pagamento_id]);
-        if (condicaoResult.rows.length > 0) {
-            condicaoPagamento = condicaoResult.rows[0];
+    // Buscar variação na tabela VariacoesPagamentoPreco
+    // Suporta busca por condicao_nome (string) enviada do frontend
+    if (dados.condicao_pagamento_id || (dados as any).condicao_pagamento) {
+        let variacaoSql = `SELECT * FROM "VariacoesPagamentoPreco" WHERE preco_id = $1`;
+        const variacaoParams = [precoBase.id];
+
+        if (dados.condicao_pagamento_id) {
+            variacaoSql += ` AND id = $2`;
+            variacaoParams.push(dados.condicao_pagamento_id);
+        } else if ((dados as any).condicao_pagamento) {
+            variacaoSql += ` AND condicao_nome = $2`;
+            variacaoParams.push((dados as any).condicao_pagamento);
+        }
+
+        if (faixaAplicada) {
+            variacaoSql += ` AND (faixa_id = $${variacaoParams.length + 1} OR faixa_id IS NULL) ORDER BY faixa_id DESC LIMIT 1`;
+            variacaoParams.push(faixaAplicada.id);
+        } else {
+            variacaoSql += ` LIMIT 1`;
+        }
+
+        const variacaoResult = await query(variacaoSql, variacaoParams);
+        if (variacaoResult.rows.length > 0) {
+            condicaoPagamento = variacaoResult.rows[0];
             variacaoPagamento = condicaoPagamento?.percentual_variacao || 0;
-            precoFinal = precoFinal * (1 + variacaoPagamento / 100);
+            precoFinal = condicaoPagamento?.preco_variado || (precoFinal * (1 + variacaoPagamento / 100));
         }
     }
 

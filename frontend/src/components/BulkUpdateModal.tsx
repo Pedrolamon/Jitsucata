@@ -120,7 +120,7 @@ export function BulkUpdateModal({
                                 step="0.1"
                                 value={percentual}
                                 onChange={(e) => setPercentual(parseFloat(e.target.value))}
-                                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500"
+                                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-gray-500 focus:outline-none focus:border-orange-500"
                                 placeholder="Ex: 5.5"
                             />
                             <span className="text-white font-bold">%</span>

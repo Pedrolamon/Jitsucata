@@ -1,4 +1,4 @@
-import { query, pool } from '../database';
+import { query, pool } from '../database.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function getAllPrices() {
@@ -18,7 +18,7 @@ export async function updateBulkPrices(materiais: any[]) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        
+
         // Loop para atualizar cada material enviado
         for (const item of materiais) {
             await client.query(

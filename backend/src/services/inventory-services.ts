@@ -1,5 +1,5 @@
 
-import { query } from "../database"; // Importe sua função de query
+import { query } from "../database.js"; // Importe sua função de query
 import { v4 as uuidv4 } from "uuid";
 
 interface material {

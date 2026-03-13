@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS "Materiais" (
     "dataRegistro" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "pesoBruto" DECIMAL(10,2),
     "pesoLiquido" DECIMAL(10,2),
+    "zona" VARCHAR(20),
     contaminacao DECIMAL(10,2),
     cambio DECIMAL(10,4),
     preco DECIMAL(10,2),
@@ -255,6 +256,18 @@ CREATE TABLE IF NOT EXISTS "FaixasPreco" (
     "atualizadoEm" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- VARIAÇÕES DE PAGAMENTO POR FAIXA DE PREÇO
+CREATE TABLE IF NOT EXISTS "VariacoesPagamentoPreco" (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    preco_id UUID NOT NULL REFERENCES "TabelaPrecosAvancada"(id) ON DELETE CASCADE,
+    faixa_id UUID REFERENCES "FaixasPreco"(id) ON DELETE CASCADE,
+    condicao_nome VARCHAR(100) NOT NULL, -- Nome da condição de pagamento
+    percentual_variacao DECIMAL(5, 2) DEFAULT 0, -- Ex: 5.50 = 5.5% de aumento
+    preco_variado DECIMAL(12, 4) NOT NULL, -- Preço com variação aplicada
+    "criadoEm" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "atualizadoEm" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- HISTÓRICO DE PREÇOS
 CREATE TABLE IF NOT EXISTS "HistoricoPrecos" (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -288,6 +301,8 @@ CREATE INDEX IF NOT EXISTS idx_tabela_precos_avancada_estado ON "TabelaPrecosAva
 CREATE INDEX IF NOT EXISTS idx_tabela_precos_avancada_status ON "TabelaPrecosAvancada"(status);
 CREATE INDEX IF NOT EXISTS idx_tabela_precos_avancada_datas ON "TabelaPrecosAvancada"(data_inicio, data_fim);
 CREATE INDEX IF NOT EXISTS idx_faixas_preco_preco_id ON "FaixasPreco"(preco_id);
+CREATE INDEX IF NOT EXISTS idx_variacoes_pagamento_preco_id ON "VariacoesPagamentoPreco"(preco_id);
+CREATE INDEX IF NOT EXISTS idx_variacoes_pagamento_faixa_id ON "VariacoesPagamentoPreco"(faixa_id);
 CREATE INDEX IF NOT EXISTS idx_historico_precos_classificacao ON "HistoricoPrecos"(classificacao_id);
 CREATE INDEX IF NOT EXISTS idx_historico_precos_estado ON "HistoricoPrecos"(estado_id);
 CREATE INDEX IF NOT EXISTS idx_historico_precos_data ON "HistoricoPrecos"("criadoEm");

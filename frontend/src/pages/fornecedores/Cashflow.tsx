@@ -94,7 +94,7 @@ export default function SupplierCashflow() {
                             "px-6 py-2 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all",
                             filtroStatus === status
                                 ? "bg-white text-[var(--color-primary)] shadow-lg"
-                                : "bg-white/20 text-white hover:bg-white/30"
+                                : "bg-white/20 text-gray-500 hover:bg-white/30"
                         )}
                     >
                         {status}

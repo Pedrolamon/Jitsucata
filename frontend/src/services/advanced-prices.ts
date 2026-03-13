@@ -97,7 +97,7 @@ export const advancedPricesService = {
     createTabelaPrecos: async (data: {
         classificacao_id: string;
         estado_id?: string;
-        preco_base: number;
+        preco_base?: number;
         data_inicio: string;
         data_fim?: string;
         observacoes?: string;
@@ -120,6 +120,10 @@ export const advancedPricesService = {
     approveTabelaPrecos: async (id: string): Promise<TabelaPrecosAvancada> => {
         const res = await api.post(`/prices/tabela/${id}/approve`);
         return res.data;
+    },
+
+    deleteTabelaPrecos: async (id: string): Promise<void> => {
+        await api.delete(`/prices/tabela/${id}`);
     },
 
     // ===== CÁLCULO DE PREÇO =====

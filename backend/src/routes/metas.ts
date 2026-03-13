@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { getMetas, postMetas, editMetas, deleteMetas } from "../services/metas-services";
+import { getMetas, postMetas, editMetas, deleteMetas } from "../services/metas-services.js";
 
 const router = Router();
 

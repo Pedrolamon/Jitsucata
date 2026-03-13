@@ -12,11 +12,11 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #F47D30;
 
   --color-primary: #F47D30;
   --color-primary-dark: #D9651F;
-  --color-bg: #F9FAFB;
+  --color-bg: #F47D30;
   --color-surface: #FFFFFF;
   --color-text: #1e2939;
   --color-muted: #6B7280;
@@ -29,7 +29,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: #F47D30;
   --foreground: oklch(0.147 0.004 49.25);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.147 0.004 49.25);
@@ -107,7 +107,7 @@ button:focus-visible {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #F47D30;
   }
 
   a:hover {
@@ -158,6 +158,32 @@ button:focus-visible {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Light gray theme overrides */
+.theme-light-gray {
+  --color-bg: #F47D30;
+  /* light gray */
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+  /* slate-800 */
+  --color-primary: #F47D30;
+  /* orange */
+  --color-primary-dark: #D9651F;
+  --color-border: rgba(0, 0, 0, 0.06);
+  --bg-input: #f3f4f6;
+}
+
+/* Buttons that use primary should be orange in light theme */
+.theme-light-gray button {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* Ensure surfaces use surface color */
+.theme-light-gray .bg-surface,
+.theme-light-gray .surface {
+  background-color: var(--color-surface) !important;
 }
 
 .dark {

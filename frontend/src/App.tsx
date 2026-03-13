@@ -30,6 +30,7 @@ import TrocarSenha from './pages/auth/TrocarSenha';
 import RecuperarSenha from './pages/auth/RecuperarSenha';
 import Register from './pages/auth/Register';
 import NovoFornecedor from './pages/supplier-pages/novoFornecedor';
+import NotFound from './pages/NotFound';
 import Aprovar from './pages/Aprovar';
 import EdiçãoFornecedores from './pages/ediçãoFornecedores';
 import PrecosAvancados from './pages/PrecosAvancados';
@@ -305,6 +306,7 @@ const App = () => {
             }
           />
           <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

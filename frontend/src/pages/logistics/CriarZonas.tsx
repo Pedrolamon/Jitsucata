@@ -48,7 +48,10 @@ const PlanejadorLogistico = () => {
           ...f,
           cargaTotal: mats
             .filter((m) => m.fornecedorId === f.id)
-            .reduce((acc, curr) => acc + Number(curr.quantidade), 0),
+            .reduce((acc, curr) => {
+              const qtd = Number(curr.quantidade) || 0;
+              return acc + (curr.unidade?.toLowerCase() === 'kg' ? qtd / 1000 : qtd);
+            }, 0),
         }));
         setFornecedores(fornsComCarga);
       },

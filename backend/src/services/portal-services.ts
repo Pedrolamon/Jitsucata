@@ -1,4 +1,4 @@
-import { query } from "../database";
+import { query } from "../database.js";
 import { v4 as uuidv4 } from "uuid";
 
 // retorna os preços (mesmo que getAllPrices, mas exposto para fornecedor)

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
-import { Fornecedor } from "../types/express";
-import { createsupplier, getSupplierPrices, getPendingSuppliers, approveSupplier, deleteSupplier, findUserById, getAllActiveSuppliers, updateSupplier } from "../services/Fornecedores-services";
-import { getCoordsFromCEP } from "../utils/geocoding"
+import { Fornecedor } from "../types/express.js";
+import { createsupplier, getSupplierPrices, getPendingSuppliers, approveSupplier, deleteSupplier, findUserById, getAllActiveSuppliers, updateSupplier } from "../services/Fornecedores-services.js";
+import { getCoordsFromCEP } from "../utils/geocoding.js"
 import { validate as isUuid } from 'uuid';
 
 const router = Router();

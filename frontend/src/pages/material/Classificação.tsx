@@ -1,15 +1,27 @@
 import { useState } from "react";
-import { ClassificaçãoMateriais } from "../../domain/materiais";
+import { ClassificaçãoMateriais, ClassificaçãoMateriaisNãoferrosos } from "../../domain/materiais";
 import { Search, Info, AlertTriangle, X } from "lucide-react";
+import { TabNavigation } from '../../components/TabNavigation';
+import { LayoutDashboard, PlusCircle, Settings } from 'lucide-react';
 
 export default function MaterialClassification() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMaterial, setSelectedMaterial] = useState<typeof ClassificaçãoMateriais[0] | null>(null);
+  const [abaAtiva, setAbaAtiva] = useState('ferrosa');
+
+  const baseDeDados = abaAtiva === 'ferrosa' 
+    ? ClassificaçãoMateriais 
+    : ClassificaçãoMateriaisNãoferrosos;
 
   // Filtro para busca por título
-  const filteredMaterials = ClassificaçãoMateriais.filter((m) =>
+  const filteredMaterials = baseDeDados.filter((m) =>
     m.Titulo.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const minhasAbas = [
+    { id: 'ferrosa', label: 'Sucata Ferrosa', icon: LayoutDashboard },
+    { id: 'nao-ferrosa', label: 'Sucata Não Ferrosa', icon: PlusCircle },
+  ];
 
   return (
     <div className="min-h-screen p-6" style={{ backgroundColor: 'var(--color-primary)' }}>
@@ -21,6 +33,9 @@ export default function MaterialClassification() {
             Classificação de Materiais
           </h2>
           <p className="text-white/70 text-xs font-medium uppercase tracking-widest">Padrões de Qualidade e Sucata</p>
+          <p className="text-white/70 text-xs font-medium uppercase tracking-widest">
+            {abaAtiva === 'ferrosa' ? 'Metais de Base de Ferro' : 'Metais Nobres e Ligas'}
+          </p>
         </div>
 
         <div className="relative w-full md:w-96">
@@ -33,7 +48,14 @@ export default function MaterialClassification() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <TabNavigation 
+          tabs={minhasAbas} 
+          activeTab={abaAtiva} 
+          onChange={setAbaAtiva} 
+        />
       </div>
+
+      
 
       {/* Grid de Materiais */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -43,11 +65,7 @@ export default function MaterialClassification() {
             onClick={() => setSelectedMaterial(material)}
             className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer transform hover:-translate-y-1"
           >
-            {/* Espaço para Imagem */}
             <div className="h-48 bg-gray-200 relative overflow-hidden">
-              {/* Quando você tiver as imagens, substitua a div abaixo por: 
-                  <img src={material.ImagemUrl} alt={material.Titulo} className="w-full h-full object-cover" /> 
-              */}
               <div className="w-full h-full flex items-center justify-center text-gray-400 uppercase font-black text-[10px] p-4 text-center">
                 <img
                   src={material.ImagemUrl}

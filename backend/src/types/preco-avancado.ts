@@ -89,15 +89,22 @@ export interface AuditoriaPrecos {
 export interface CriarTabelaPrecosRequest {
     classificacao_id: string;
     estado_id?: string;
-    preco_base: number;
+    preco_base?: number; // Opcional - será calculado a partir da primeira faixa
     data_inicio: string;
     data_fim?: string;
     observacoes?: string;
     faixas?: {
+        id?: string;
         peso_minimo: number;
         peso_maximo?: number;
         percentual_desconto?: number;
         preco_faixa?: number;
+    }[];
+    variacoes_pagamento?: {
+        condicao_nome: string;
+        dias_prazo?: number;
+        percentual_variacao: number; // Ex: 5.5 = 5.5% de aumento
+        preco_variado?: number;
     }[];
 }
 

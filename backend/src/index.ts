@@ -1,18 +1,18 @@
 import express from "express";
 import cors from "cors";
 //db
-import { connectDB } from "./database";
+import { connectDB } from "./database.js";
 
 //routes
-import fornecedorRoutes from "./routes/fornecedores";
-import authRoutes from "./routes/auth"
-import priceRoutes from "./routes/prices"
-import advancedPriceRoutes from "./routes/advanced-prices"
-import user from "./routes/user"
-import metas from "./routes/metas"
-import inventory from "./routes/inventory"
-import pagementosRoutes from "./routes/pagemento"
-import fornecedorPortal from "./routes/fornecedorPortal"
+import fornecedorRoutes from "./routes/fornecedores.js";
+import authRoutes from "./routes/auth.js"
+import priceRoutes from "./routes/prices.js"
+import advancedPriceRoutes from "./routes/advanced-prices.js"
+import user from "./routes/user.js"
+import metas from "./routes/metas.js"
+import inventory from "./routes/inventory.js"
+import pagementosRoutes from "./routes/pagemento.js"
+import fornecedorPortal from "./routes/fornecedorPortal.js"
 
 const app = express();
 

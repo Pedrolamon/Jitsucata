@@ -57,7 +57,7 @@ export default function SupplierMercado() {
                                     placeholder="Ex: SP"
                                     value={filtros.state}
                                     onChange={(e) => setFiltros({ ...filtros, state: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-white border border-white/30 text-xs outline-none focus:border-white transition-colors placeholder-white/50"
+                                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-gray-500 border border-white/30 text-xs outline-none focus:border-white transition-colors placeholder-white/50"
                                 />
                             </div>
                             <div>
@@ -66,7 +66,7 @@ export default function SupplierMercado() {
                                     placeholder="Ex: São Paulo"
                                     value={filtros.city}
                                     onChange={(e) => setFiltros({ ...filtros, city: e.target.value })}
-                                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-white border border-white/30 text-xs outline-none focus:border-white transition-colors placeholder-white/50"
+                                    className="w-full px-4 py-2 rounded-lg bg-white/20 text-gray-500 border border-white/30 text-xs outline-none focus:border-white transition-colors placeholder-white/50"
                                 />
                             </div>
                             <button

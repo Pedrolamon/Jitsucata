@@ -1,8 +1,23 @@
 import { Router, Request, Response } from "express";
-import { authenticateJWT, requireRole } from "../middleware/auth";
-import * as portal from "../services/portal-services";
+import { authenticateJWT, requireRole } from "../middleware/auth.js";
+import * as portal from "../services/portal-services.js";
 
 const router = Router();
+
+// rota pública para mercado (pode ser usada por qualquer perfil)
+router.get('/materialMercado', async (req: Request, res: Response) => {
+  try {
+    const { state, city } = req.query;
+    const list = await portal.getMarketMaterials({
+      state: state as string,
+      city: city as string,
+    });
+    res.json(list);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao buscar material no mercado' });
+  }
+});
 
 // todas as rotas deste arquivo exigem token de fornecedor
 router.use(authenticateJWT, requireRole('fornecedor'));
@@ -70,19 +85,6 @@ router.get('/fornecedores/financeiro', async (req: any, res: Response) => {
   }
 });
 
-// rota pública para mercado (pode ser usada por qualquer perfil)
-router.get('/materialMercado', async (req: Request, res: Response) => {
-  try {
-    const { state, city } = req.query;
-    const list = await portal.getMarketMaterials({
-      state: state as string,
-      city: city as string,
-    });
-    res.json(list);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erro ao buscar material no mercado' });
-  }
-});
+
 
 export default router;

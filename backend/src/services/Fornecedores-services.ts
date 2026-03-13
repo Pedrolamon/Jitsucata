@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { query, pool } from '../database';
+import { query, pool } from '../database.js';
 import { QueryResult } from 'pg';
-import { Fornecedor } from '../types/express';
+import { Fornecedor } from '../types/express.js';
 
 const FORNECEDOR_SELECT_FIELDS = `
     name, cnpj, stateRegistration, address, EnvironmentalLicense, LegalRepresentative,

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { v4 as uuidv4 } from "uuid";
 import {
     getAllEstados,
     initializeEstadosBrasil,
@@ -12,11 +13,12 @@ import {
     getTabelaPrecosById,
     listTabelaPrecos,
     updateTabelaPrecos,
+    deleteTabelaPrecos,
     approveTabelaPrecos,
     calcularPreco,
     getHistoricoPrecos,
     getRelatorioVariacaoPrecos
-} from "../services/advanced-prices-services";
+} from "../services/advanced-prices-services.js";
 
 const router = Router();
 
@@ -123,18 +125,20 @@ router.get('/prices/tabela/:id', async (req: Request, res: Response) => {
 
 router.post('/prices/tabela', async (req: Request, res: Response) => {
     try {
-        // Assumindo que userId vem do middleware de autenticação
-        const userId = (req as any).userId || "system";
+        // Assumindo que userId vem do middleware de autenticação, caso contrário null
+        const userId = (req as any).userId || null;
+        console.log("📦 Criando tabela de preços com dados:", JSON.stringify(req.body, null, 2));
         const preco = await createTabelaPrecos(req.body, userId);
         res.status(201).json(preco);
-    } catch (error) {
-        res.status(400).json({ error: "Erro ao criar tabela de preços" });
+    } catch (error: any) {
+        console.error("❌ Erro ao criar tabela de preços:", error);
+        res.status(400).json({ error: "Erro ao criar tabela de preços", details: error.message });
     }
 });
 
 router.put('/prices/tabela/:id', async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).userId || "system";
+        const userId = (req as any).userId || null;
         const preco = await updateTabelaPrecos(req.params.id, req.body, userId);
         res.json(preco);
     } catch (error) {
@@ -144,11 +148,25 @@ router.put('/prices/tabela/:id', async (req: Request, res: Response) => {
 
 router.post('/prices/tabela/:id/approve', async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).userId || "system";
+        const userId = (req as any).userId || null;
         const preco = await approveTabelaPrecos(req.params.id, userId);
         res.json(preco);
     } catch (error) {
         res.status(400).json({ error: "Erro ao aprovar tabela de preços" });
+    }
+});
+
+router.delete('/prices/tabela/:id', async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).userId || null;
+        await deleteTabelaPrecos(req.params.id, userId);
+        res.status(204).send();
+    } catch (error: any) {
+        if (error.message && error.message.includes('não encontrada')) {
+            return res.status(404).json({ error: error.message });
+        }
+        console.error('Erro ao deletar tabela de preços', error);
+        res.status(500).json({ error: 'Erro ao deletar tabela de preços' });
     }
 });
 

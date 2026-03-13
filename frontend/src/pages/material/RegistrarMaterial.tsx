@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { criarMaterial, newMaterial, getTiposMateriais } from '../../services/materiais';
+import { criarMaterial, newMaterial, getTiposMateriais, listarFornecedores } from '../../services/materiais';
+import type { Fornecedor } from '../../services/materiais';
+
 import { ClassificaçãoMateriais } from '../../domain/materiais';
 import {
-  Weight, FileText, PlusCircle, ArrowLeft, CheckCircle2,
+  FileText, PlusCircle, ArrowLeft, CheckCircle2,
   AlertCircle, Truck, Scale, DollarSign, Calendar, MapPin,
-  Factory, Layers, FlaskConical, RefreshCw, ChevronDown, Plus
+  Factory, Layers, FlaskConical, ChevronDown, Plus
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
@@ -29,6 +31,8 @@ const RegistrarMaterial = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
+  const [fornecedorSelecionado, setFornecedorSelecionado] = useState<string>("");
 
   // Estado do Formulário Único
   const [form, setForm] = useState({
@@ -36,16 +40,29 @@ const RegistrarMaterial = () => {
     pesoBruto: '',
     pesoLiquido: '',
     contaminacao: '',
-    cambio: '',
     quantidade: '',
     unidade: 'kg',
     preco: '',
     patio: '',
+    zona: '',
     notaFiscal: '',
     placaVeiculo: '',
     dataEntrada: '',
     observacoes: '',
   });
+
+  // Cálculo automático da Quantidade (Peso Bruto - Peso Líquido/Tara)
+  useEffect(() => {
+    const bruto = parseFloat(form.pesoBruto) || 0;
+    const liquido = parseFloat(form.pesoLiquido) || 0;
+
+    const resultado = bruto - liquido;
+
+    setForm(prev => ({
+      ...prev,
+      quantidade: resultado > 0 ? resultado.toString() : '0'
+    }));
+  }, [form.pesoBruto, form.pesoLiquido]);
 
   const fetchMateriais = async () => {
     const baseMateriais: MaterialData[] = ClassificaçãoMateriais.map((m) => ({
@@ -76,8 +93,31 @@ const RegistrarMaterial = () => {
     }
   };
 
+  const fetchFornecedores = async () => {
+    try {
+      const data = await listarFornecedores();
+      setFornecedores(data);
+
+      // Se o usuário está autenticado, pré-seleciona ele como fornecedor
+      if (fornecedorId && data.length > 0) {
+        const fornecedorAtual = data.find(f => f.id === fornecedorId);
+        if (fornecedorAtual) {
+          setFornecedorSelecionado(fornecedorAtual.id);
+        } else {
+          setFornecedorSelecionado(data[0].id);
+        }
+      } else if (data.length > 0) {
+        setFornecedorSelecionado(data[0].id);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar fornecedores:", err);
+      setError("Erro ao carregar lista de fornecedores");
+    }
+  };
+
   useEffect(() => {
     fetchMateriais();
+    fetchFornecedores();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -114,8 +154,8 @@ const RegistrarMaterial = () => {
       return;
     }
 
-    if (!fornecedorId) {
-      setError("Sessão expirada. Faça login novamente.");
+    if (!fornecedorSelecionado) {
+      setError("Por favor, selecione um fornecedor.");
       return;
     }
 
@@ -124,11 +164,10 @@ const RegistrarMaterial = () => {
       await criarMaterial({
         ...form,
         quantidade: Number(form.quantidade),
-        fornecedorId: fornecedorId,
+        fornecedorId: fornecedorSelecionado,
         pesoBruto: form.pesoBruto ? Number(form.pesoBruto) : undefined,
         pesoLiquido: form.pesoLiquido ? Number(form.pesoLiquido) : undefined,
         contaminacao: form.contaminacao ? Number(form.contaminacao) : undefined,
-        cambio: form.cambio ? Number(form.cambio) : undefined,
         preco: form.preco ? Number(form.preco) : undefined,
       });
       setSuccess("Material registrado e enviado ao estoque!");
@@ -196,7 +235,7 @@ const RegistrarMaterial = () => {
       <div className="grid grid-cols-12 gap-8">
         {/* Esquerda: Instruções e Status */}
         <div className="col-span-12 lg:col-span-4 space-y-4">
-          <div className="bg-white/10 backdrop-blur-md p-6 rounded-[2rem] border border-white/20 text-white">
+          <div className="bg-white/10 backdrop-blur-md p-6 rounded-[2rem] border border-white/20 text-gray-500">
             <h4 className="font-black uppercase italic text-sm mb-4 flex items-center gap-2">
               <AlertCircle size={18} className="text-orange-400" /> Atenção
               Operador
@@ -330,7 +369,7 @@ const RegistrarMaterial = () => {
 
               <div>
                 <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                  3. Peso líquido
+                  3. Tara caminhão
                 </label>
                 <div className="relative">
                   <Scale
@@ -338,53 +377,8 @@ const RegistrarMaterial = () => {
                     size={20}
                   />
                   <input
-                    name="PesoBruto"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={form.pesoBruto}
-                    onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                  3. Peso líquido
-                </label>
-                <div className="relative">
-                  <Weight
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
-                    size={20}
-                  />
-                  <input
-                    name="quantidade"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={form.pesoLiquido}
-                    onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                  4. Quantidade do Lote
-                </label>
-                <div className="relative">
-                  <Layers
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
-                    size={20}
-                  />
-                  <input
                     name="pesoLiquido"
                     type="number"
-                    step="0.01"
                     placeholder="0.00"
                     value={form.pesoLiquido}
                     onChange={handleChange}
@@ -407,6 +401,7 @@ const RegistrarMaterial = () => {
                     placeholder="0.00"
                     value={form.quantidade}
                     onChange={handleChange}
+                    readOnly
                     className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
                     required
                   />
@@ -422,8 +417,9 @@ const RegistrarMaterial = () => {
                   <input
                     name="contaminacao"
                     type="number"
-                    step="0.01"
-                    placeholder="0.00"
+                    min="0"
+                    max="100"
+                    placeholder="0%"
                     value={form.contaminacao}
                     onChange={handleChange}
                     className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
@@ -452,7 +448,7 @@ const RegistrarMaterial = () => {
 
               <div>
                 <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                  7. Preço
+                  7. Valor de Aquisição (R$)
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
@@ -471,36 +467,24 @@ const RegistrarMaterial = () => {
 
               <div>
                 <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
-                  8. Câmbio
-                </label>
-                <div className="relative">
-                  <RefreshCw className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
-                  <input
-                    name="cambio"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={form.cambio}
-                    onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
                   9. Fornecedor
                 </label>
                 <div className="relative">
-                  <Factory className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
-                  <input
+                  <Factory className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" size={20} />
+                  <select
                     name="fornecedor"
-                    type="text"
-                    value={user?.name || ''}
-                    readOnly
-                    className="w-full pl-12 pr-4 py-4 bg-gray-100 border-none rounded-2xl text-lg font-bold outline-none text-gray-500"
-                  />
+                    value={fornecedorSelecionado}
+                    onChange={(e) => setFornecedorSelecionado(e.target.value)}
+                    className="w-full text-gray-500 pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none cursor-pointer"
+                  >
+                    <option value="">-- Selecione um Fornecedor --</option>
+                    {fornecedores.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                 </div>
               </div>
 
@@ -515,6 +499,23 @@ const RegistrarMaterial = () => {
                     type="text"
                     placeholder="Pátio / Baia"
                     value={form.patio}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block tracking-widest">
+                  10.1 Zona de Armazenament
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                  <input
+                    name="zona"
+                    type="text"
+                    placeholder="Zona de Armazenamento"
+                    value={form.zona}
                     onChange={handleChange}
                     className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
                     required
@@ -550,7 +551,7 @@ const RegistrarMaterial = () => {
                     type="date"
                     value={form.dataEntrada}
                     onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20"
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-500 text-lg font-bold outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none custom-date-input"
                     required
                   />
                 </div>
